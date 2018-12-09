@@ -87,7 +87,7 @@ module.exports = (state, html, bundleUrl) => {
           }
         </style>
         <meta property="og:title" content="${wi_image ? `Wisconsin Legislation` : title.replace(/</g, '&lt;').replace(/"/g, '&quot;')}" />
-        <meta property="og:description" content="${wi_image ? `Vote now on extraordinary session bills.` : description.replace(/</g, '&lt;').replace(/"/g, '&quot;')}" />
+        <meta property="og:description" content="${wi_image ? `Be heard on key legislation affecting your state.` : description.replace(/</g, '&lt;').replace(/"/g, '&quot;')}" />
         <meta property="og:image" content="${og_image_url}" />
         <meta property="og:type" content="website" />
         ${responsiveTableStyle}

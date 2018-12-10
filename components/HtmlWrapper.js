@@ -87,8 +87,8 @@ const og_image_url = state.og_image_url || wi_image || madison_image || profile_
             max-width: 560px;
           }
         </style>
-        <meta property="og:title" content="${wi_image ? `Wisconsin Legislation` : title.replace(/</g, '&lt;').replace(/"/g, '&quot;')}" />
-        <meta property="og:description" content="${wi_image ? `Be heard on key legislation affecting your state.` : description.replace(/</g, '&lt;').replace(/"/g, '&quot;')}" />
+        <meta property="og:title" content="${wi_image ? `Wisconsin Legislation` : title.replace(/</g, '&lt;').replace(/"/g, '&quot;')}, ${madison_image ? 'Madison legislation' : title.replace(/</g, '&lt;').replace(/"/g, '&quot;')}" />
+        <meta property="og:description" content="${wi_image ? `Be heard on key legislation affecting your state.` : description.replace(/</g, '&lt;').replace(/"/g, '&quot;')}, ${madison_image ? `Be heard on key legislation affecting your city.` : description.replace(/</g, '&lt;').replace(/"/g, '&quot;')}" />
         <meta property="og:image" content="${og_image_url}" />
         <meta property="og:type" content="website" />
         ${responsiveTableStyle}

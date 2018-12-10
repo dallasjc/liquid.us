@@ -10,7 +10,8 @@ module.exports = (state, html, bundleUrl) => {
   const profile_image_url = selected_profile ? avatarURL(selected_profile) : ''
   const measure_image_url = selected_bill && selected_bill.image_name ? `${ASSETS_URL}/measure-images/${selected_bill.image_name}` : ''
   const wi_image = state.location.query.legislature === 'WI' && state.location.path === '/legislation' && `${ASSETS_URL}/WI.png`
-  const og_image_url = state.og_image_url || wi_image || profile_image_url || measure_image_url || `https://blog.${WWW_DOMAIN}/assets/twitter_large.png`
+  const madison_image = state.location.query.legislature === 'Madison, WI' && state.location.path === '/legislation' && `${ASSETS_URL}/Madison.jpg`
+const og_image_url = state.og_image_url || wi_image || madison_image || profile_image_url || measure_image_url || `https://blog.${WWW_DOMAIN}/assets/twitter_large.png`
 
   return `
     <!DOCTYPE html>

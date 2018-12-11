@@ -57,7 +57,7 @@ module.exports = class CommentPage extends Component {
             window.history.replaceState(window.history.state, page_title_with_appname, document.location)
           }
 
-          const measureImage = measure.legislature_name === 'WI' ? `${ASSETS_URL}/${measure.legislature_name}.png` : ''
+          const measureImage = measure.legislature_name === 'WI' || 'Madison, WI' ? `${ASSETS_URL}/${measure.legislature_name}.png` : ''
           const authorImage = comment.username || comment.twitter_username ? this.avatarURL(comment) : null
           const ogImage = authorImage || measureImage
 

@@ -113,6 +113,32 @@ const toggleRecentlyIntroduced = (storage) => (event) => {
     btn.click()
   }
 }
+const toggleBills = (storage) => (event) => {
+  const btn = document.querySelector('.filter-submit')
+  if (btn.disabled) {
+    event.preventDefault()
+  } else {
+    if (event.currentTarget && event.currentTarget.checked) {
+      storage.set('bills', 'on')
+    } else {
+      storage.unset('bills')
+    }
+    btn.click()
+  }
+}
+const toggleNominations = (storage) => (event) => {
+  const btn = document.querySelector('.filter-submit')
+  if (btn.disabled) {
+    event.preventDefault()
+  } else {
+    if (event.currentTarget && event.currentTarget.checked) {
+      storage.set('nominations', 'on')
+    } else {
+      storage.unset('nominations')
+    }
+    btn.click()
+  }
+}
 const toggleLiquidProposals = (storage) => (event) => {
   const btn = document.querySelector('.filter-submit')
   if (btn.disabled) {
@@ -194,7 +220,8 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
   const committee_action = location.query.committee_action || storage.get('committee_action')
   const floor_action = location.query.floor_action || storage.get('floor_action')
   const exec_action = location.query.exec_action || storage.get('exec_action')
-
+  const bills = location.query.floor_action || storage.get('bills')
+  const nominations = location.query.exec_action || storage.get('nominations')
 
   return html()`
     <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
@@ -223,9 +250,16 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
           </label>
           <label class="checkbox has-text-grey">
           <input onclick=${toggleIntroducedInLeg(storage)} type="checkbox" name="from_leg_body" checked=${!!from_leg_body}>
-          Imported Bills
+          Imported
           </label>
-
+          <label class="checkbox has-text-grey">
+          <input onclick=${toggleBills(storage)} type="checkbox" name="bills" checked=${!!bills}>
+          Bills
+          </label>
+          <label class="checkbox has-text-grey">
+          <input onclick=${toggleNominations(storage)} type="checkbox" name="nominations" checked=${!!nominations}>
+          Nominations
+          </label>
 
         </div>
 
@@ -352,13 +386,18 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   }
   const order = orders[query.order || 'upcoming']
   const floor_action_query = floor_action === 'on' ? `&status=in.(Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar)` : ''
-  const exec_action_query = exec_action === 'on' ? '&status=eq.Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive' : ''
+  const exec_action_query = exec_action === 'on' ? '&status=eq.(Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive)' : ''
   const recently_introduced_query = recently_introduced === 'on' ? `&status=eq.Introduced` : ''
   const committee_action_query = committee_action === 'on' ? `&status=in.(Committee Consideration,Awaiting floor or committee vote,Pending Committee)` : ''
   const from_liquid = query.from_liquid || storage.get('from_liquid')
   const from_leg_body = query.from_leg_body || storage.get('from_leg_body')
-  const from_liquid_query = from_liquid === 'on' ? '&' : ''
-  const from_leg_body_query = from_leg_body === 'on' && from_liquid !== 'on' ? '&legislature_namecontainscongress=in.(115,116)' : ''
+  const from_liquid_query = from_liquid === 'on' ? '' : '&introduced_at=is.null'
+  const from_leg_body_query = from_leg_body === 'on' ? '&introduced_at=is.not.null' : ''
+  const nominations = query.nominations || storage.get('nominations')
+  const nominations_query = nominations === 'on' ? '&type=in.(PN)' : ''
+  const bills = query.bills || storage.get('bills')
+  const bills_query = bills === 'on' ? '&type=in.(HR,S,AB,SB)' : ''
+
 
   const fields = [
     'title', 'number', 'type', 'short_id', 'id', 'status',
@@ -368,7 +407,7 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   ]
 
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
-  const api_url = `/measures_detailed?select=${fields.join(',')}${recently_introduced_query}${from_liquid_query}${from_leg_body_query}${floor_action_query}${committee_action_query}${exec_action_query}${fts}&type=not.eq.PN${order}&limit=40`
+  const api_url = `/measures_detailed?select=${fields.join(',')}${recently_introduced_query}${from_liquid_query}${from_leg_body_query}${floor_action_query}${committee_action_query}${exec_action_query}${nominations_query}${bills_query}${fts}&type=not.eq.PN${order}&limit=40`
   console.log(api_url)
 
   return api(api_url, { storage }).then((measures) => dispatch({
@@ -438,24 +477,24 @@ const summaryTooltipButton = (id, short_id, summary) => html(`summarybutton-${id
 
 const noBillsMsg = (from_liquid, from_leg_body, recently_introduced, committee_action, exec_action, floor_action) => html()`
 <div>
-  ${from_liquid === 'on' && from_leg_body === 'on' ? [`
-    <p class="is-size-5">Please select either Liquid or Imported bills.
-    </p>  `] :
-    (recently_introduced === 'on' && (committee_action === 'on' || exec_action === 'on' || floor_action === 'on')) || (committee_action === 'on' && (exec_action === 'on' || floor_action === 'on')) || (floor_action === 'on' && exec_action === 'on') ? [`<p class="is-size-5">Please select one last action type: Committee, Floor, or Executive.
-      </p>`] :
-  from_leg_body === 'on' ? [`
-    <p class="is-size-5">Liquid doesn't have this location's imported bill list yet, please change your selected criteria to view legislative items.
+${from_liquid === 'on' && from_leg_body === 'on' ? [`
+  <p class="is-size-5">Please select either Liquid or Imported bills.
+  </p>  `] :
+  (recently_introduced === 'on' && committee_action === 'on') ? [`<p class="is-size-5">Please select a single last action type: Committee, Floor, or Executive.
+    </p>`] :
+from_leg_body === 'on' ? [`
+  <p class="is-size-5">Liquid doesn't have this location's imported bill list yet, please change your selected criteria to view legislative items.
 
-    </p>
-  `] : committee_action === 'on' || floor_action === 'on' || exec_action === 'on' ? [`
-    <p class="is-size-5">Liquid proposals do not have recent actions. Please change your selected criteria to view legislative items.
+  </p>
+`] : committee_action === 'on' || floor_action === 'on' || exec_action === 'on' ? [`
+  <p class="is-size-5">Liquid proposals do not have recent actions. Please change your selected criteria to view legislative items.
 
-    </p>
-  `] : [`
-    <a href="/legislation/propose" class="button is-primary has-text-weight-semibold">
-      <span class="icon"><i class="fa fa-file"></i></span>
-      <span>Add the first policy proposal</span>
-    </a>
-  `]}
+  </p>
+`] : [`
+  <a href="/legislation/propose" class="button is-primary has-text-weight-semibold">
+    <span class="icon"><i class="fa fa-file"></i></span>
+    <span>Add the first policy proposal</span>
+  </a>
+`]}
 </div>
 `

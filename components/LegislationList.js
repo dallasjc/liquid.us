@@ -225,7 +225,7 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
 
   return html()`
     <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
-      <input name="order" type="hidden" value="${location.query.order || 'upcoming'}" />
+      <input name="order" type="hidden" value="${location.query.order || 'all'}" />
       <div class="field is-grouped is-grouped-right">
         <div class="${`control ${user ? '' : 'is-hidden'}`}">
         <label class="checkbox has-text-grey">
@@ -295,17 +295,20 @@ const filterTabs = ({ geoip, legislatures, location, storage, user }, dispatch) 
     city: 'City proposals',
   }
 
+  const userCity = user && user.address ? user.address.city : geoip ? geoip.city : ''
+  const userState = user && user.address ? user.address.state : geoip ? geoip.regionName : ''
+
   return html()`
     <div class="tabs">
       <ul>
-        <li class="${!query.order || query.order === 'upcoming' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('upcoming', query)}`}">All</a></li>
+        <li class="${!query.order || query.order === 'all' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('all', query)}`}">All</a></li>
         <li class="${query.order === 'congress' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('congress', query)}`}">Congress</a></li>
-        <li class="${query.order === 'state' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('state', query)}`}">${user.address.state}</a></li>
-        <li class="${query.order === 'city' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('city', query)}`}">${user.address.city}</a></li>      </ul>
+        <li class="${query.order === 'state' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('state', query)}`}">${userState}</a></li>
+        <li class="${query.order === 'city' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('city', query)}`}">${userCity}</a></li>      </ul>
     </div>
     <div class="columns">
       <div class="column">
-        <p class="has-text-grey is-size-6">${orderDescriptions[query.order || 'upcoming']}</p>
+        <p class="has-text-grey is-size-6">${orderDescriptions[query.order || 'all']}</p>
       </div>
       <div class="column has-text-right has-text-left-mobile">
         ${filterForm(geoip, legislatures, storage, location, user, dispatch)}
@@ -361,43 +364,42 @@ const measureListRow = (s) => {
   `
 }
 
-const initialize = (prevQuery, location, storage, user) => (dispatch) => {
+const initialize = (prevQuery, location, storage, user, geoip) => (dispatch) => {
   const { query, url } = location
 
   if (prevQuery === url) return dispatch({ type: 'loaded' })
   const terms = query.terms && query.terms.replace(/[^\w\d ]/g, '').replace(/(hr|s) (\d+)/i, '$1$2').replace(/(\S)\s+(\S)/g, '$1 & $2')
   const fts = terms ? `&tsv=fts(simple).${encodeURIComponent(terms)}` : ''
-  const userState = user.address.state
 
   const recently_introduced = query.recently_introduced || storage.get('recently_introduced')
   const exec_action = query.exec_action || storage.get('exec_action')
   const floor_action = query.floor_action || storage.get('floor_action')
   const committee_action = query.committee_action || storage.get('committee_action')
-
+  const userCity = user && user.address ? user.address.city : geoip ? geoip.city : ''
+  const userState = user && user.address ? user.address.state : geoip ? geoip.regionName : ''
   const lastAction = recently_introduced === 'on' && from_leg_body === 'on' ? 'introduced_at' : recently_introduced === 'on' && from_liquid === 'on' ? 'created_at' : (exec_action === 'on' || floor_action === 'on' || committee_action === 'on') ? 'last_action_at' : 'last_action_at'
-
+console.log(userState)
 
   const orders = {
-    all: `&published=is.true&order=${lastAction}.desc.nullslast`,
+    all: `&published=is.true?legislature_name=cs.(${userCity})&order=created_at.desc.nullslast`,
     congress: `&published=is.true&congress=not.is.null&order=${lastAction}.desc.nullslast`,
     state: `&published=is.true&legislature_name=eq.${userState}&order=${lastAction}.desc.nullslast`,
     city:
-    `&published=is.true&legislature_name=eq.${userState}&order=${lastAction}.desc.nullslast`,
+    `&published=is.true&legislature_name=eq.${userCity}, ${userState}&order=${lastAction}.desc.nullslast`,
   }
-  const order = orders[query.order || 'upcoming']
+  const order = orders[query.order || 'all']
   const floor_action_query = floor_action === 'on' ? `&status=in.(Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar)` : ''
   const exec_action_query = exec_action === 'on' ? '&status=eq.(Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive)' : ''
   const recently_introduced_query = recently_introduced === 'on' ? `&status=eq.Introduced` : ''
   const committee_action_query = committee_action === 'on' ? `&status=in.(Committee Consideration,Awaiting floor or committee vote,Pending Committee)` : ''
   const from_liquid = query.from_liquid || storage.get('from_liquid')
   const from_leg_body = query.from_leg_body || storage.get('from_leg_body')
-  const from_liquid_query = from_liquid === 'on' ? '' : '&introduced_at=is.null'
+  const from_liquid_query = from_liquid === 'on' ? '&introduced_at=is.null' : ''
   const from_leg_body_query = from_leg_body === 'on' ? '&introduced_at=is.not.null' : ''
   const nominations = query.nominations || storage.get('nominations')
   const nominations_query = nominations === 'on' ? '&type=in.(PN)' : ''
   const bills = query.bills || storage.get('bills')
   const bills_query = bills === 'on' ? '&type=in.(HR,S,AB,SB)' : ''
-
 
   const fields = [
     'title', 'number', 'type', 'short_id', 'id', 'status',
@@ -407,7 +409,7 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   ]
 
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
-  const api_url = `/measures_detailed?select=${fields.join(',')}${recently_introduced_query}${from_liquid_query}${from_leg_body_query}${floor_action_query}${committee_action_query}${exec_action_query}${nominations_query}${bills_query}${fts}&type=not.eq.PN${order}&limit=40`
+  const api_url = `/measures_detailed?select=${fields.join(',')}${recently_introduced_query}${from_liquid_query}${from_leg_body_query}${floor_action_query}${committee_action_query}${exec_action_query}${nominations_query}${bills_query}${fts}${order}&limit=40`
   console.log(api_url)
 
   return api(api_url, { storage }).then((measures) => dispatch({

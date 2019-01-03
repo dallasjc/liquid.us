@@ -1,4 +1,3 @@
-const { APP_NAME } = process.env
 const { api, html, preventDefault, redirect } = require('../helpers')
 const activityIndicator = require('./ActivityIndicator')
 
@@ -100,22 +99,85 @@ module.exports = {
   },
 }
 
-const autoSubmit = () => document.querySelector('.filter-submit').click()
 
-const toggleDirectVotes = (storage) => (event) => {
+const toggleRecentlyIntroduced = (storage) => (event) => {
   const btn = document.querySelector('.filter-submit')
   if (btn.disabled) {
     event.preventDefault()
   } else {
     if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('hide_direct_votes', 'on')
+      storage.set('recently_introduced', 'on')
     } else {
-      storage.unset('hide_direct_votes')
+      storage.unset('recently_introduced')
     }
     btn.click()
   }
 }
-
+const toggleLiquidProposals = (storage) => (event) => {
+  const btn = document.querySelector('.filter-submit')
+  if (btn.disabled) {
+    event.preventDefault()
+  } else {
+    if (event.currentTarget && event.currentTarget.checked) {
+      storage.set('from_liquid', 'on')
+    } else {
+      storage.unset('from_liquid')
+    }
+    btn.click()
+  }
+}
+const toggleIntroducedInLeg = (storage) => (event) => {
+  const btn = document.querySelector('.filter-submit')
+  if (btn.disabled) {
+    event.preventDefault()
+  } else {
+    if (event.currentTarget && event.currentTarget.checked) {
+      storage.set('from_leg_body', 'on')
+    } else {
+      storage.unset('from_leg_body')
+    }
+    btn.click()
+  }
+}
+const toggleCommitteeActions = (storage) => (event) => {
+  const btn = document.querySelector('.filter-submit')
+  if (btn.disabled) {
+    event.preventDefault()
+  } else {
+    if (event.currentTarget && event.currentTarget.checked) {
+      storage.set('committee_action', 'on')
+    } else {
+      storage.unset('committee_action')
+    }
+    btn.click()
+  }
+}
+const toggleExecActions = (storage) => (event) => {
+  const btn = document.querySelector('.filter-submit')
+  if (btn.disabled) {
+    event.preventDefault()
+  } else {
+    if (event.currentTarget && event.currentTarget.checked) {
+      storage.set('exec_action', 'on')
+    } else {
+      storage.unset('exec_action')
+    }
+    btn.click()
+  }
+}
+const toggleFloorActions = (storage) => (event) => {
+  const btn = document.querySelector('.filter-submit')
+  if (btn.disabled) {
+    event.preventDefault()
+  } else {
+    if (event.currentTarget && event.currentTarget.checked) {
+      storage.set('floor_action', 'on')
+    } else {
+      storage.unset('floor_action')
+    }
+    btn.click()
+  }
+}
 const updateFilter = (event, location, dispatch) => {
   event.preventDefault()
   const formData = require('parse-form').parse(event.target).body
@@ -126,28 +188,47 @@ const updateFilter = (event, location, dispatch) => {
 }
 
 const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
-  const hide_direct_votes = location.query.hide_direct_votes || storage.get('hide_direct_votes')
-  const legislatureQuery = decodeURIComponent(location.query.legislature).replace(/\+/g, ' ')
+  const recently_introduced = location.query.recently_introduced || storage.get('recently_introduced')
+  const from_liquid = location.query.from_liquid || storage.get('from_liquid')
+  const from_leg_body = location.query.from_leg_body || storage.get('from_leg_body')
+  const committee_action = location.query.committee_action || storage.get('committee_action')
+  const floor_action = location.query.floor_action || storage.get('floor_action')
+  const exec_action = location.query.exec_action || storage.get('exec_action')
+
 
   return html()`
     <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
       <input name="order" type="hidden" value="${location.query.order || 'upcoming'}" />
       <div class="field is-grouped is-grouped-right">
         <div class="${`control ${user ? '' : 'is-hidden'}`}">
-          <label class="checkbox has-text-grey">
-            <input onclick=${toggleDirectVotes(storage)} type="checkbox" name="hide_direct_votes" checked=${!!hide_direct_votes}>
-            Hide voted
+        <label class="checkbox has-text-grey">
+            <input onclick=${toggleRecentlyIntroduced(storage)} type="checkbox" name="recently_introduced" checked=${!!recently_introduced}>
+            Introduced
           </label>
+        <label class="checkbox has-text-grey">
+        <input onclick=${toggleCommitteeActions(storage)} type="checkbox" name="committee_action" checked=${!!committee_action}>
+        Committee
+        </label>
+        <label class="checkbox has-text-grey">
+        <input onclick=${toggleFloorActions(storage)} type="checkbox" name="floor_action" checked=${!!floor_action}>
+        Floor
+        </label>
+        <label class="checkbox has-text-grey">
+        <input onclick=${toggleExecActions(storage)} type="checkbox" name="exec_action" checked=${!!exec_action}>
+        Executive
+        </label>
+          <label class="checkbox has-text-grey">
+            <input onclick=${toggleLiquidProposals(storage)} type="checkbox" name="from_liquid" checked=${!!from_liquid}>
+            Liquid Proposals
+          </label>
+          <label class="checkbox has-text-grey">
+          <input onclick=${toggleIntroducedInLeg(storage)} type="checkbox" name="from_leg_body" checked=${!!from_leg_body}>
+          Imported Bills
+          </label>
+
+
         </div>
-        <div class="control" style="margin-left: 10px; margin-right: 0;">
-          <div class="select">
-            <select autocomplete="off" name="legislature" onchange=${autoSubmit}>
-              ${legislatures.map(({ abbr, name }) => {
-                return `<option value="${abbr}" ${abbr === legislatureQuery ? 'selected' : ''}>${name}</option>`
-              })}
-            </select>
-          </div>
-        </div>
+
         <button type="submit" class="filter-submit is-hidden">Update</button>
       </div>
       ${(!user || !user.address) && geoip ? [addAddressNotification(geoip, user)] : []}
@@ -174,29 +255,27 @@ const makeFilterQuery = (order, query) => {
 const filterTabs = ({ geoip, legislatures, location, storage, user }, dispatch) => {
   const { query } = location
   const orderDescriptions = {
-    upcoming: 'Bills upcoming for a vote in the legislature.',
-    new: 'Bills recently introduced.',
-    proposed: `Bills introduced on ${APP_NAME}`,
+    all: 'All levels of government',
+    congress: 'Congressional bills and nominations',
+    state: `Statewide proposals`,
+    city: 'City proposals',
   }
 
   return html()`
-    <div>
-      <div class="tabs">
-        <ul>
-          <li class="${!query.order || query.order === 'upcoming' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('upcoming', query)}`}">Upcoming for vote</a></li>
-          <li class="${query.order === 'new' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('new', query)}`}">Recently introduced</a></li>
-          <li class="${query.order === 'proposed' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('proposed', query)}`}">Introduced on ${APP_NAME}</a></li>
-        </ul>
+    <div class="tabs">
+      <ul>
+        <li class="${!query.order || query.order === 'upcoming' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('upcoming', query)}`}">All</a></li>
+        <li class="${query.order === 'congress' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('congress', query)}`}">Congress</a></li>
+        <li class="${query.order === 'state' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('state', query)}`}">${user.address.state}</a></li>
+        <li class="${query.order === 'city' ? 'is-active' : ''}"><a href="${`/legislation?${makeFilterQuery('city', query)}`}">${user.address.city}</a></li>      </ul>
+    </div>
+    <div class="columns">
+      <div class="column">
+        <p class="has-text-grey is-size-6">${orderDescriptions[query.order || 'upcoming']}</p>
       </div>
-      <div class="columns">
-        <div class="column">
-          <p class="has-text-grey is-size-6">${orderDescriptions[query.order || 'upcoming']}</p>
-        </div>
-        <div class="column has-text-right has-text-left-mobile">
-          ${filterForm(geoip, legislatures, storage, location, user, dispatch)}
-        </div>
+      <div class="column has-text-right has-text-left-mobile">
+        ${filterForm(geoip, legislatures, storage, location, user, dispatch)}
       </div>
-      <div></div>
     </div>
   `
 }
@@ -252,22 +331,34 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const { query, url } = location
 
   if (prevQuery === url) return dispatch({ type: 'loaded' })
-
   const terms = query.terms && query.terms.replace(/[^\w\d ]/g, '').replace(/(hr|s) (\d+)/i, '$1$2').replace(/(\S)\s+(\S)/g, '$1 & $2')
   const fts = terms ? `&tsv=fts(simple).${encodeURIComponent(terms)}` : ''
+  const userState = user.address.state
+
+  const recently_introduced = query.recently_introduced || storage.get('recently_introduced')
+  const exec_action = query.exec_action || storage.get('exec_action')
+  const floor_action = query.floor_action || storage.get('floor_action')
+  const committee_action = query.committee_action || storage.get('committee_action')
+
+  const lastAction = recently_introduced === 'on' && from_leg_body === 'on' ? 'introduced_at' : recently_introduced === 'on' && from_liquid === 'on' ? 'created_at' : (exec_action === 'on' || floor_action === 'on' || committee_action === 'on') ? 'last_action_at' : 'last_action_at'
+
 
   const orders = {
-    upcoming: '&status=not.eq.Introduced&introduced_at=not.is.null&failed_lower_at=is.null&passed_lower_at=is.null&order=legislature_name.desc,next_agenda_action_at.asc.nullslast,next_agenda_begins_at.asc.nullslast,next_agenda_category.asc.nullslast,last_action_at.desc.nullslast',
-    new: '&introduced_at=not.is.null&order=introduced_at.desc',
-    proposed: '&published=is.true&introduced_at=is.null&order=created_at.desc',
+    all: `&published=is.true&order=${lastAction}.desc.nullslast`,
+    congress: `&published=is.true&congress=not.is.null&order=${lastAction}.desc.nullslast`,
+    state: `&published=is.true&legislature_name=eq.${userState}&order=${lastAction}.desc.nullslast`,
+    city:
+    `&published=is.true&legislature_name=eq.${userState}&order=${lastAction}.desc.nullslast`,
   }
-
   const order = orders[query.order || 'upcoming']
-
-  const hide_direct_votes = query.hide_direct_votes || storage.get('hide_direct_votes')
-  const hide_direct_votes_query = hide_direct_votes === 'on' ? '&or=(delegate_rank.is.null,delegate_rank.neq.-1)' : ''
-
-  const legislature = `&legislature_name=eq.${query.legislature || 'U.S. Congress'}`
+  const floor_action_query = floor_action === 'on' ? `&status=in.(Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar)` : ''
+  const exec_action_query = exec_action === 'on' ? '&status=eq.Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive' : ''
+  const recently_introduced_query = recently_introduced === 'on' ? `&status=eq.Introduced` : ''
+  const committee_action_query = committee_action === 'on' ? `&status=in.(Committee Consideration,Awaiting floor or committee vote,Pending Committee)` : ''
+  const from_liquid = query.from_liquid || storage.get('from_liquid')
+  const from_leg_body = query.from_leg_body || storage.get('from_leg_body')
+  const from_liquid_query = from_liquid === 'on' ? '&' : ''
+  const from_leg_body_query = from_leg_body === 'on' && from_liquid !== 'on' ? '&legislature_namecontainscongress=in.(115,116)' : ''
 
   const fields = [
     'title', 'number', 'type', 'short_id', 'id', 'status',
@@ -275,8 +366,10 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
     'introduced_at', 'last_action_at', 'next_agenda_begins_at', 'next_agenda_action_at',
     'summary', 'legislature_name', 'published', 'created_at', 'author_first_name', 'author_last_name', 'author_username',
   ]
+
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
-  const api_url = `/measures_detailed?select=${fields.join(',')}${hide_direct_votes_query}${fts}${legislature}&type=not.eq.PN${order}&limit=40`
+  const api_url = `/measures_detailed?select=${fields.join(',')}${recently_introduced_query}${from_liquid_query}${from_leg_body_query}${floor_action_query}${committee_action_query}${exec_action_query}${fts}&type=not.eq.PN${order}&limit=40`
+  console.log(api_url)
 
   return api(api_url, { storage }).then((measures) => dispatch({
     type: 'receivedMeasures',
@@ -343,26 +436,26 @@ const summaryTooltipButton = (id, short_id, summary) => html(`summarybutton-${id
   </a>
 `
 
-const noBillsMsg = (order, query) => html()`
-  <div>
-    ${order !== 'proposed' ? [`
-      <p class="is-size-5">Liquid doesn't have this location's bill list yet,
-        <a href="${`/legislation?${makeQuery('proposed', query)}`}">
-        click here to view manually added items.
-        </a>
-      </p>
-    `] : [`
-      <a href="/legislation/propose" class="button is-primary has-text-weight-semibold">
-        <span class="icon"><i class="fa fa-file"></i></span>
-        <span>Add the first policy proposal</span>
-      </a>
-    `]}
-  </div>
-`
+const noBillsMsg = (from_liquid, from_leg_body, recently_introduced, committee_action, exec_action, floor_action) => html()`
+<div>
+  ${from_liquid === 'on' && from_leg_body === 'on' ? [`
+    <p class="is-size-5">Please select either Liquid or Imported bills.
+    </p>  `] :
+    (recently_introduced === 'on' && (committee_action === 'on' || exec_action === 'on' || floor_action === 'on')) || (committee_action === 'on' && (exec_action === 'on' || floor_action === 'on')) || (floor_action === 'on' && exec_action === 'on') ? [`<p class="is-size-5">Please select one last action type: Committee, Floor, or Executive.
+      </p>`] :
+  from_leg_body === 'on' ? [`
+    <p class="is-size-5">Liquid doesn't have this location's imported bill list yet, please change your selected criteria to view legislative items.
 
-const makeQuery = (order, query) => {
-  const newQuery = Object.assign({}, query, { order, terms: query.terms || '' })
-  return Object.keys(newQuery).map(key => {
-    return `${key}=${newQuery[key]}`
-  }).join('&')
-}
+    </p>
+  `] : committee_action === 'on' || floor_action === 'on' || exec_action === 'on' ? [`
+    <p class="is-size-5">Liquid proposals do not have recent actions. Please change your selected criteria to view legislative items.
+
+    </p>
+  `] : [`
+    <a href="/legislation/propose" class="button is-primary has-text-weight-semibold">
+      <span class="icon"><i class="fa fa-file"></i></span>
+      <span>Add the first policy proposal</span>
+    </a>
+  `]}
+</div>
+`

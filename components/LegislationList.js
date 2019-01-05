@@ -126,6 +126,19 @@ const toggleBills = (storage) => (event) => {
     btn.click()
   }
 }
+const toggleLiquidVotes = (storage) => (event) => {
+  const btn = document.querySelector('.filter-submit')
+  if (btn.disabled) {
+    event.preventDefault()
+  } else {
+    if (event.currentTarget && event.currentTarget.checked) {
+      storage.set('recent_votes', 'on')
+    } else {
+      storage.unset('recent_votes')
+    }
+    btn.click()
+  }
+}
 const toggleNominations = (storage) => (event) => {
   const btn = document.querySelector('.filter-submit')
   if (btn.disabled) {
@@ -222,6 +235,7 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
   const exec_action = location.query.exec_action || storage.get('exec_action')
   const bills = location.query.floor_action || storage.get('bills')
   const nominations = location.query.exec_action || storage.get('nominations')
+  const recent_votes = location.query.recent_votes || storage.get('recent_votes')
 
   return html()`
     <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
@@ -229,7 +243,11 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
       <div class="field is-grouped is-grouped-right">
         <div class="${`control ${user ? '' : 'is-hidden'}`}">
         <label class="checkbox has-text-grey">
-            <input onclick=${toggleRecentlyIntroduced(storage)} type="checkbox" name="recently_introduced" checked=${!!recently_introduced}>
+        <label class="checkbox has-text-grey">
+        <input onclick=${toggleLiquidVotes(storage)} type="checkbox" name="recent_votes" checked=${!!recent_votes}>
+        Liquid Votes
+        </label>
+        <input onclick=${toggleRecentlyIntroduced(storage)} type="checkbox" name="recently_introduced" checked=${!!recently_introduced}>
             Introduced
           </label>
         <label class="checkbox has-text-grey">
@@ -374,32 +392,41 @@ const initialize = (prevQuery, location, storage, user, geoip) => (dispatch) => 
   const recently_introduced = query.recently_introduced || storage.get('recently_introduced')
   const exec_action = query.exec_action || storage.get('exec_action')
   const floor_action = query.floor_action || storage.get('floor_action')
+  const recent_votes = query.recent_votes || storage.get('recent_votes')
   const committee_action = query.committee_action || storage.get('committee_action')
   const userCity = user && user.address ? user.address.city : geoip ? geoip.city : ''
   const userState = user && user.address ? user.address.state : geoip ? geoip.regionName : ''
-  const lastAction = recently_introduced === 'on' && from_leg_body === 'on' ? 'introduced_at' : recently_introduced === 'on' && from_liquid === 'on' ? 'created_at' : (exec_action === 'on' || floor_action === 'on' || committee_action === 'on') ? 'last_action_at' : 'last_action_at'
+  const lastAction = recently_introduced === 'on' && recent_votes === 'on' && ||recent_votes === 'on' ? 'last_vote_at' : recently_introduced === 'on' && from_leg_body === 'on' ? 'introduced_at' : recently_introduced === 'on' && from_liquid === 'on' ? 'created_at' : (exec_action === 'on' || floor_action === 'on' || committee_action === 'on') ? 'last_action_at' : 'last_action_at'
+const lastActionAt = 'last_action'
 console.log(userState)
 
   const orders = {
-    all: `&published=is.true?legislature_name=cs.(${userCity})&order=created_at.desc.nullslast`,
+    all: `&published=is.true?legislature_name=in.("${userCity}, ${userState}",${userState},US-Congress)&order=${lastAction}.nullslast`,
     congress: `&published=is.true&congress=not.is.null&order=${lastAction}.desc.nullslast`,
     state: `&published=is.true&legislature_name=eq.${userState}&order=${lastAction}.desc.nullslast`,
     city:
     `&published=is.true&legislature_name=eq.${userCity}, ${userState}&order=${lastAction}.desc.nullslast`,
   }
+  const committeeStatus = committee_action === 'on' ? 'Committee Consideration,Awaiting floor or committee vote,Pending Committee,' : ''
+  const floorStatus = floor_action === 'on' ? 'Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar,'
+  const execStatus = 'Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive'
   const order = orders[query.order || 'all']
-  const floor_action_query = floor_action === 'on' ? `&status=in.(Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar)` : ''
-  const exec_action_query = exec_action === 'on' ? '&status=eq.(Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive)' : ''
-  const recently_introduced_query = recently_introduced === 'on' ? `&status=eq.Introduced` : ''
-  const committee_action_query = committee_action === 'on' ? `&status=in.(Committee Consideration,Awaiting floor or committee vote,Pending Committee)` : ''
+  const floor_action_query = committee_action === 'on' && floor_action === 'on' && exec_action && recently_introduced === 'on' ? `&status=in.(${committeeStatus},${floorStatus},${execStatus},Introduced)` : floor_action === 'on' && exec_action === 'on' && recently_introduced === 'on' ? `&status=in.(${floorStatus},${execStatus},Introduced)` : committee_action === 'on' && floor_action === 'on' && exec_action === 'on' ? `&status=in.(${floorStatus},${committeeStatus},${execStatus})` : floor_action === 'on' && committeeStatus === 'on' && recently_introduced === 'on' ? `&status=in.(${floorStatus},${committeeStatus},Introduced)` : committee_action === 'on' && floor_action === 'on' ? `&status=in.(${floorStatus}${committeeStatus})` :
+  floor_action === 'on' && exec_action === 'on' ? `&status=in.(${floorStatus},${execStatus})` : floor_action === 'on' && recently_introduced === 'on' ? `&status=in.(${floorStatus},Introduced)` : floor_action === 'on' ? `&status=in.(${floorStatus})` : ``
+
+  const exec_action_query = committee_action === 'on' && floor_action === 'on' && exec_action && recently_introduced === 'on' ? `&status=in.(${committeeStatus},${floorStatus},${execStatus},Introduced)` : committee_action === 'on' && floor_action === 'on' && exec_action === 'on' ? `&status=in.(${committeeStatus},${floorStatus},${execStatus})` : committee_action === 'on' && recently_introduced === 'on' && exec_action === 'on' ? `&status=in.(Introduced,${committeeStatus},${execStatus})` : floor_action === 'on' && exec_action && recently_introduced === 'on' ? `&status=in.(${floorStatus},${execStatus},Introduced)` : committee_action === 'on' && exec_action === 'on' ? `&status=in.(${committeeStatus},${execStatus})` : floor_action === 'on' && exec_action === 'on' ? `&status=in.(${floorStatus},${execStatus})` : exec_action === 'on' && recently_introduced === 'on' ? `&status=in.(${execStatus}, Introduced)` : exec_action === 'on' ? `&status=in.(${execStatus})` : ''
+  const recently_introduced_query = committee_action === 'on' && floor_action === 'on' && exec_action && recently_introduced === 'on' ? `&status=in.(${committeeStatus},${floorStatus},${execStatus},Introduced)` : committee_action === 'on' && floor_action === 'on' && recently_introduced === 'on' ? `&status=in.(${committeeStatus},${floorStatus},Introduced)` : committee_action === 'on' && recently_introduced === 'on' && exec_action === 'on' ? `&status=in.(Introduced,${committeeStatus},${execStatus})` : floor_action === 'on' && exec_action && recently_introduced === 'on' ? `&status=in.(${floorStatus},${execStatus},Introduced)` : floor_action === 'on' && exec_action === 'on' && recently_introduced ? `&status=in.(${floorStatus},Introduced` : recently_introduced === 'on' && committee_action === 'on' ? `&status=in.(${committeeStatus},Introduced` : exec_action === 'on' && recently_introduced === 'on' ? `&status=in.(${execStatus},Introduced)` : recently_introduced === 'on' ? `&status=in.(Introduced)` : ''
+
+  const committee_action_query = committee_action === 'on' && floor_action === 'on' && exec_action && recently_introduced === 'on' ? `&status=in.(${committeeStatus},${floorStatus},${execStatus},Introduced)` : committee_action === 'on' && floor_action === 'on' && recently_introduced === 'on' ? `&status=in.(${committeeStatus},${floorStatus},Introduced)` : committee_action === 'on' && recently_introduced === 'on' && exec_action === 'on' ? `&status=in.(Introduced,${committeeStatus},${execStatus})` : floor_action === 'on' && exec_action && committee_action === 'on' ? `&status=in.(${floorStatus},${execStatus},${committeeStatus})` : recently_introduced === 'on' && committee_action === 'on' ? `&status=in.(Introduced,${committeeStatus}` : floor_action === 'on' && committee_action === 'on' ? `&status=in.(${committeeStatus},Introduced` : exec_action === 'on' && committee_action === 'on' ? `&status=in.(${execStatus},${committeeStatus})` : committee_action === 'on' ? `&status=in.(${committee_action})` : ''
+  const recent_votes_query = recent_votes === 'on' && recent_votes === 'on' ? `&last_vote_at=is.not.null` : ''
   const from_liquid = query.from_liquid || storage.get('from_liquid')
   const from_leg_body = query.from_leg_body || storage.get('from_leg_body')
-  const from_liquid_query = from_liquid === 'on' ? '&introduced_at=is.null' : ''
-  const from_leg_body_query = from_leg_body === 'on' ? '&introduced_at=is.not.null' : ''
+  const from_liquid_query = from_liquid === 'on' && from_leg_body === 'on' ? '&chamber=in.(Senate,House,Both,Upper,Lower,Liquid)' : from_liquid === 'on' ? '&chamber=eq.liquid' : ''
+  const from_leg_body_query = from_leg_body === 'on' && from_liquid === 'on' ? '&chamber=in.(Senate,House,Both,Upper,Lower,Liquid)' : from_leg_body === 'on' ? '&chamber=in.(Senate,House,Both,Upper,Lower)' : ''
   const nominations = query.nominations || storage.get('nominations')
-  const nominations_query = nominations === 'on' ? '&type=in.(PN)' : ''
+  const nominations_query = nominations === 'on' && bills === 'on' ? 'type=in.(PN,HR,S,AB,SB)' : nominations === 'on' ? '&type=in.(PN)' : ''
   const bills = query.bills || storage.get('bills')
-  const bills_query = bills === 'on' ? '&type=in.(HR,S,AB,SB)' : ''
+  const bills_query = bills === 'on' && nominations === 'on' ? 'type=in.(PN,HR,S,AB,SB)' : bills === 'on' ? '&type=in.(HR,S,AB,SB)' : ''
 
   const fields = [
     'title', 'number', 'type', 'short_id', 'id', 'status',
@@ -409,7 +436,7 @@ console.log(userState)
   ]
 
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
-  const api_url = `/measures_detailed?select=${fields.join(',')}${recently_introduced_query}${from_liquid_query}${from_leg_body_query}${floor_action_query}${committee_action_query}${exec_action_query}${nominations_query}${bills_query}${fts}${order}&limit=40`
+  const api_url = `/measures_detailed?select=${fields.join(',')}${recent_votes_query}${recently_introduced_query}${from_liquid_query}${from_leg_body_query}${floor_action_query}${committee_action_query}${exec_action_query}${nominations_query}${bills_query}${fts}${order}&limit=40`
   console.log(api_url)
 
   return api(api_url, { storage }).then((measures) => dispatch({

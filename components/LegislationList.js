@@ -364,7 +364,7 @@ const measureListRow = (s) => {
   `
 }
 
-const initialize = (prevQuery, location, storage, user, geoip) => (dispatch) => {
+const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const { query, url } = location
 
   if (prevQuery === url) return dispatch({ type: 'loaded' })
@@ -375,8 +375,8 @@ const initialize = (prevQuery, location, storage, user, geoip) => (dispatch) => 
   const exec_action = query.exec_action || storage.get('exec_action')
   const floor_action = query.floor_action || storage.get('floor_action')
   const committee_action = query.committee_action || storage.get('committee_action')
-  const userCity = user && user.address ? user.address.city : geoip ? geoip.city : ''
-  const userState = user && user.address ? user.address.state : geoip ? geoip.regionName : ''
+  const userCity = user && user.address ? user.address.city : ''
+  const userState = user && user.address ? user.address.state : ''
   const lastAction = recently_introduced === 'on' && from_leg_body === 'on' ? 'introduced_at' : recently_introduced === 'on' && from_liquid === 'on' ? 'created_at' : (exec_action === 'on' || floor_action === 'on' || committee_action === 'on') ? 'last_action_at' : 'last_action_at'
 console.log(userState)
 
@@ -387,11 +387,13 @@ console.log(userState)
     city:
     `&published=is.true&legislature_name=eq.${userCity}, ${userState}&order=${lastAction}.desc.nullslast`,
   }
+    const committeeStatus = committee_action === 'on' ? 'Committee Consideration,Awaiting floor or committee vote,Pending Committee' : ''
+    const floorStatus = floor_action === 'on' ? 'Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar' : ''
+    const execStatus = exec_action === 'on' ? 'Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive' : ''
+
+
   const order = orders[query.order || 'all']
-  const floor_action_query = floor_action === 'on' ? `&status=in.(Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar)` : ''
-  const exec_action_query = exec_action === 'on' ? '&status=in.(Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive)' : ''
-  const recently_introduced_query = recently_introduced === 'on' ? `&status=eq.Introduced` : ''
-  const committee_action_query = committee_action === 'on' ? `&status=in.(Committee Consideration,Awaiting floor or committee vote,Pending Committee)` : ''
+const status_query = committee_action === 'on' && floor_action === 'on' && exec_action && recently_introduced === 'on' ? `&status=in.(${committeeStatus},${floorStatus},${execStatus},Introduced)` : floor_action === 'on' && exec_action === 'on' && recently_introduced === 'on' ? `&status=in.(${floorStatus},${execStatus},Introduced)` : committee_action === 'on' && floor_action === 'on' && exec_action === 'on' ? `&status=in.(${floorStatus},${committeeStatus},${execStatus})` : committee_action === 'on' && recently_introduced === 'on' && exec_action === 'on' ? `&status=in.(Introduced,${committeeStatus},${execStatus})` : floor_action === 'on' && committeeStatus === 'on' && recently_introduced === 'on' ? `&status=in.(${floorStatus},${committeeStatus},Introduced)` : committee_action === 'on' && exec_action === 'on' ? `&status=in.(${execStatus},${committeeStatus})` : recently_introduced === 'on' && exec_action === 'on' ? `&status=in.(Introduced,${committeeStatus})` : committee_action === 'on' && exec_action === 'on' ? `&status=in.(${execStatus},Introduced)` : committee_action === 'on' && floor_action === 'on' ? `&status=in.(${floorStatus},${committeeStatus})` : floor_action === 'on' && exec_action === 'on' ? `&status=in.(${floorStatus},${execStatus})` : floor_action === 'on' && recently_introduced === 'on' ? `&status=in.(${floorStatus},Introduced)` : floor_action === 'on' ? `&status=in.(${floorStatus})` : recently_introduced === 'on' ? `&status=in.(Introduced)` : exec_action === 'on' ? `&status=in.(${execStatus})` : committee_action === 'on' ? `&status=in.(${committeeStatus})` : ``
   const from_liquid = query.from_liquid || storage.get('from_liquid')
   const from_leg_body = query.from_leg_body || storage.get('from_leg_body')
   const from_liquid_query = from_liquid === 'on' ? '&introduced_at=is.null' : ''
@@ -409,7 +411,7 @@ console.log(userState)
   ]
 
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
-  const api_url = `/measures_detailed?select=${fields.join(',')}${recently_introduced_query}${from_liquid_query}${from_leg_body_query}${floor_action_query}${committee_action_query}${exec_action_query}${nominations_query}${bills_query}${fts}${order}&limit=40`
+  const api_url = `/measures_detailed?select=${fields.join(',')}${from_liquid_query}${from_leg_body_query}${status_query}${nominations_query}${bills_query}${fts}${order}&limit=40`
   console.log(api_url)
 
   return api(api_url, { storage }).then((measures) => dispatch({

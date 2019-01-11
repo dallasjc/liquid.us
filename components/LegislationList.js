@@ -387,13 +387,17 @@ console.log(userState)
     city:
     `&published=is.true&legislature_name=eq.${userCity}, ${userState}&order=${lastAction}.desc.nullslast`,
   }
-    const committeeStatus = committee_action === 'on' ? 'Committee Consideration,Awaiting floor or committee vote,Pending Committee' : ''
-    const floorStatus = floor_action === 'on' ? 'Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar' : ''
-    const execStatus = exec_action === 'on' ? 'Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive' : ''
-
-
+  const committeeStatus = 'Committee Consideration,Awaiting floor or committee vote,Pending Committee'
+  const floorStatus = 'Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar'
+  const execStatus = 'Enacted,Veto Actions,Withdrawn,Failed or Returned to Executive'
+  const introduced = recently_introduced === 'on' ? 'Introduced' : ''
   const order = orders[query.order || 'all']
-const status_query = committee_action === 'on' && floor_action === 'on' && exec_action && recently_introduced === 'on' ? `&status=in.(${committeeStatus},${floorStatus},${execStatus},Introduced)` : floor_action === 'on' && exec_action === 'on' && recently_introduced === 'on' ? `&status=in.(${floorStatus},${execStatus},Introduced)` : committee_action === 'on' && floor_action === 'on' && exec_action === 'on' ? `&status=in.(${floorStatus},${committeeStatus},${execStatus})` : committee_action === 'on' && recently_introduced === 'on' && exec_action === 'on' ? `&status=in.(Introduced,${committeeStatus},${execStatus})` : floor_action === 'on' && committeeStatus === 'on' && recently_introduced === 'on' ? `&status=in.(${floorStatus},${committeeStatus},Introduced)` : committee_action === 'on' && exec_action === 'on' ? `&status=in.(${execStatus},${committeeStatus})` : recently_introduced === 'on' && exec_action === 'on' ? `&status=in.(Introduced,${committeeStatus})` : committee_action === 'on' && exec_action === 'on' ? `&status=in.(${execStatus},Introduced)` : committee_action === 'on' && floor_action === 'on' ? `&status=in.(${floorStatus},${committeeStatus})` : floor_action === 'on' && exec_action === 'on' ? `&status=in.(${floorStatus},${execStatus})` : floor_action === 'on' && recently_introduced === 'on' ? `&status=in.(${floorStatus},Introduced)` : floor_action === 'on' ? `&status=in.(${floorStatus})` : recently_introduced === 'on' ? `&status=in.(Introduced)` : exec_action === 'on' ? `&status=in.(${execStatus})` : committee_action === 'on' ? `&status=in.(${committeeStatus})` : ``
+  const floor_query = floor_action === 'on' && (committee_action === 'on' || exec_action === 'on' || recently_introduced) ? `${floorStatus},` : floor_action === 'on' ? `${floorStatus}` : ''
+  const committee_query = committee_action === 'on' && (exec_action === 'on' || recently_introduced) ? `${committeeStatus},` : committee_action === 'on' ? `${committeeStatus}` : ``
+  const executive_query = exec_action === 'on' && recently_introduced === 'on' ? `${execStatus},` : exec_action === 'on' ? `${execStatus}` : ``
+  const noStatus = floor_action === 'on' || committee_action === 'on' || exec_action === 'on' || recently_introduced ? '' : `${floorStatus},${committeeStatus},${execStatus},Introduced`
+  const status_query = `&status=in.(${floor_query}${committee_query}${executive_query}${introduced}${noStatus})`
+
   const from_liquid = query.from_liquid || storage.get('from_liquid')
   const from_leg_body = query.from_leg_body || storage.get('from_leg_body')
   const from_liquid_query = from_liquid === 'on' ? '&introduced_at=is.null' : ''

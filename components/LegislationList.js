@@ -273,8 +273,8 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
     <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
       <div class = "control">
       <div id = "filter_checkboxes" class="field is-grouped is-grouped-right">
-     <h3>Juridstiction</h3>
-
+     <p><h3>Juridstiction </h3></p><br>
+<p>
         <label class="checkbox has-text-grey">
             <input onclick=${toggleCongress(storage)} type="checkbox" name="congress" checked=${!!congress}>
             Congress
@@ -286,7 +286,10 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
           <label class="checkbox has-text-grey">
                 <input onclick=${toggleCity(storage)} type="checkbox" name="city" checked=${!!city}>
                 ${userCity}
-            </label><h3>Actions</h3>
+            </label>
+            </p>
+            <h3>Actions</h3>
+            <p>
 
           <label class="checkbox has-text-grey">
             <input onclick=${toggleRecentlyIntroduced(storage)} type="checkbox" name="recently_introduced" checked=${!!recently_introduced}>
@@ -304,7 +307,8 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
         <input onclick=${toggleExecActions(storage)} type="checkbox" name="exec_action" checked=${!!exec_action}>
         Executive
         </label>
-        <h3>Type</h3>
+        </p>
+        <h3>Type</h3><p>
         <label class="checkbox has-text-grey">
             <input onclick=${toggleLiquidProposals(storage)} type="checkbox" name="from_liquid" checked=${!!from_liquid}>
             Liquid Proposals
@@ -321,6 +325,7 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
           <input onclick=${toggleNominations(storage)} type="checkbox" name="nominations" checked=${!!nominations}>
           Nominations
           </label>
+          </p>
         </div>
 
         <button type="submit" class="filter-submit is-hidden">Update</button>
@@ -433,11 +438,10 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const from_liquid = query.from_liquid || storage.get('from_liquid')
   const from_leg_body = query.from_leg_body || storage.get('from_leg_body')
   const from_liquid_query = from_liquid === 'on' ? '&introduced_at=is.null' : ''
-  const from_leg_body_query = from_leg_body === 'on' ? '&introduced_at=is.not.null' : ''
+  const from_leg_body_query = from_leg_body === 'on' ? '&introduced_at=not.is.null' : ''
   const nominations = query.nominations || storage.get('nominations')
-  const nominations_query = nominations === 'on' ? '&type=in.(PN)' : ''
   const bills = query.bills || storage.get('bills')
-  const bills_query = bills === 'on' ? '&type=in.(HR,S,AB,SB)' : ''
+  const type_query = bills === 'on' && nominations === 'on' ? '&type=in.(HR,S,AB,SB,PN)' : nominations === 'on' ? '&type=in.(PN)' : nominations === 'on' ? '&type=in.(HR,S,AB,SB)' : ''
 
   const fields = [
     'title', 'number', 'type', 'short_id', 'id', 'status',
@@ -447,7 +451,7 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   ]
 
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
-  const api_url = `/measures_detailed?select=${fields.join(',')}${from_liquid_query}${from_leg_body_query}${status_query}${nominations_query}${bills_query}${legCheck}${fts}&published=is.true&order=${lastAction}.desc.nullslast&limit=40`
+  const api_url = `/measures_detailed?select=${fields.join(',')}${from_liquid_query}${from_leg_body_query}${status_query}${type_query}${legCheck}${fts}&published=is.true&order=${lastAction}.desc.nullslast&limit=40`
   console.log(api_url)
 
   return api(api_url, { storage }).then((measures) => dispatch({

@@ -30,10 +30,7 @@
     "cors": "^2.8.4",
     "datasets-us-states-abbr-names": "^1.0.0",
     "datasets-us-states-names-abbr": "^1.0.0",
-<<<<<<< HEAD
     "daterange-picker-ex": "^1.1.5",
-=======
->>>>>>> dde049c1185f864f4f52c72597a8d8a1acd4634d
     "express": "^4.16.1",
     "form-urlencoded": "2.0.4",
     "humanize-duration": "^3.12.1",

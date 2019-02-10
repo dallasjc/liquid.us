@@ -586,7 +586,6 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const terms = query.terms && query.terms.replace(/[^\w\d ]/g, '').replace(/(hr|s) (\d+)/i, '$1$2').replace(/(\S)\s+(\S)/g, '$1 & $2')
   const fts = terms ? `&tsv=fts(simple).${encodeURIComponent(terms)}` : ''
 
-<<<<<<< HEAD
   const userCitySt = user && user.address ? `"${user.address.city}, ${user.address.state}"` : ''
   const userState = user && user.address ? user.address.state : ''
   const congress = query.congress || storage.get('congress')
@@ -611,13 +610,6 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const veto_check = query.veto || storage.get('veto')
   const withdrawn_check = query.withdrawn || storage.get('withdrawn')
   const failed_check = query.failed || storage.get('failed')
-=======
-  const orders = {
-    upcoming: '&status=not.eq.Introduced&introduced_at=not.is.null&failed_lower_at=is.null&failed_upper_at=is.null&or=(passed_lower_at.is.null,passed_upper_at.is.null,and(passed_lower_at.is.null,passed_upper_at.is.null))&order=next_agenda_action_at.asc.nullslast,next_agenda_begins_at.asc.nullslast,next_agenda_category.asc.nullslast,last_action_at.desc.nullslast,number.desc',
-    new: '&introduced_at=not.is.null&order=introduced_at.desc,number.desc',
-    proposed: '&published=is.true&introduced_at=is.null&order=created_at.desc,title.asc',
-  }
->>>>>>> dde049c1185f864f4f52c72597a8d8a1acd4634d
 
   const cd = committee_discharged === 'on'
   const flc = floor_consideration === 'on'
@@ -668,12 +660,9 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   ]
 
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
-<<<<<<< HEAD
   const api_url = `/measures_detailed?select=${fields.join(',')}${from_liquid_query}${from_leg_body_query}${status_query}${type_query}${updated_query}${introduced_query}${legCheck}${fts}&published=is.true&order=${lastAction}.desc.nullslast&limit=40`
   console.log(api_url)
-=======
-  const api_url = `/measures_detailed?select=${fields.join(',')}${hide_direct_votes_query}${fts}${legislature}&type=not.eq.nomination${order}&limit=40`
->>>>>>> dde049c1185f864f4f52c72597a8d8a1acd4634d
+
 
   return api(api_url, { storage }).then((measures) => dispatch({
     type: 'receivedMeasures',

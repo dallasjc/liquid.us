@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "www.liquid.us",
   "scripts": {
+    "css-build": "node-sass --omit-source-map-url styles.sass public/styles.css",
     "start": "node server.js",
     "test": "eslint ."
   },
@@ -28,6 +29,7 @@
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "datasets-us-states-abbr-names": "^1.0.0",
+    "datasets-us-states-names-abbr": "^1.0.0",
     "daterange-picker-ex": "^1.1.5",
     "express": "^4.16.1",
     "form-urlencoded": "2.0.4",
@@ -62,10 +64,12 @@
   },
   "devDependencies": {
     "babel-eslint": "^8.2.3",
+    "bulma": "^0.7.2",
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-import": "^2.11.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
-    "eslint-plugin-react": "^7.7.0"
+    "eslint-plugin-react": "^7.7.0",
+    "node-sass": "^4.11.0"
   }
 }

@@ -37,7 +37,8 @@ module.exports = {
     return html()`
       <div class="section">
         <div class="container is-widescreen">
-          <div class="has-text-right has-text-left-mobile">${filterButton}${proposeButton()}</div>
+          <div class="has-text-right has-text-left-mobile">
+          ${filterButton()} ${proposeButton()}</div>
           ${filterTabs(state, dispatch)}
           ${loading ? activityIndicator() :
             (!measuresList.length ? noBillsMsg(query.order, query) : measuresList.map((short_id) => measureListRow(measures[short_id])))}
@@ -112,6 +113,7 @@ const toggleCongress = (storage) => (event) => {
     btn.click()
   }
 }
+
 const toggleState = (storage) => (event) => {
   const btn = document.querySelector('.filter-submit')
   if (btn.disabled) {
@@ -190,15 +192,15 @@ const toggleLiquidProposals = (storage) => (event) => {
     btn.click()
   }
 }
-const togglePendingCommittee = (storage) => (event) => {
+const toggleCommitteeAction = (storage) => (event) => {
   const btn = document.querySelector('.filter-submit')
   if (btn.disabled) {
     event.preventDefault()
   } else {
     if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('pending_committee', 'on')
+      storage.set('committee_action', 'on')
     } else {
-      storage.unset('pending_committee')
+      storage.unset('committee_action')
     }
     btn.click()
   }
@@ -272,19 +274,6 @@ const toggleToExec = (storage) => (event) => {
   }
 }
 
-const toggleExecCal = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('pending_exec_cal', 'on')
-    } else {
-      storage.unset('pending_exec_cal')
-    }
-    btn.click()
-  }
-}
 
 const toggleEnacted = (storage) => (event) => {
   const btn = document.querySelector('.filter-submit')
@@ -309,34 +298,6 @@ const toggleVeto = (storage) => (event) => {
       storage.set('veto', 'on')
     } else {
       storage.unset('veto')
-    }
-    btn.click()
-  }
-}
-
-const toggleWithdrawn = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('withdrawn', 'on')
-    } else {
-      storage.unset('withdrawn')
-    }
-    btn.click()
-  }
-}
-
-const toggleFailed = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('failed', 'on')
-    } else {
-      storage.unset('failed')
     }
     btn.click()
   }
@@ -368,28 +329,28 @@ const toggleRecentUpdates = (storage) => (event) => {
     btn.click()
   }
 }
-const toggleAwaitingFloor = (storage) => (event) => {
+const toggleCommitteeDischarged = (storage) => (event) => {
   const btn = document.querySelector('.filter-submit')
   if (btn.disabled) {
     event.preventDefault()
   } else {
     if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('awaiting_floor', 'on')
+      storage.set('committee_discharged', 'on')
     } else {
-      storage.unset('awaiting_floor')
+      storage.unset('committee_discharged')
     }
     btn.click()
   }
 }
-const toggleCommitteeConsideration = (storage) => (event) => {
+const toggleFloorConsideration = (storage) => (event) => {
   const btn = document.querySelector('.filter-submit')
   if (btn.disabled) {
     event.preventDefault()
   } else {
     if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('committee_consideration', 'on')
+      storage.set('floor_consideration', 'on')
     } else {
-      storage.unset('committee_consideration')
+      storage.unset('floor_consideration')
     }
     btn.click()
   }
@@ -405,36 +366,34 @@ const updateFilter = (event, location, dispatch) => {
 }
 
 const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
-  const recently_introduced = location.query.recently_introduced || storage.get('recently_introduced')
   const from_liquid = location.query.from_liquid || storage.get('from_liquid')
   const from_leg_body = location.query.from_leg_body || storage.get('from_leg_body')
-  const recent_update = location.query.recent_update || storage.get('recent_update')
-  const committee_consideration = location.query.committee_consideration || storage.get('committee_consideration')
-  const awaiting_floor = location.query.awaiting_floor || storage.get('awaiting_floor')
-  const bills = location.query.committee_consideration || storage.get('bills')
+  const bills = location.query.floor_consideration || storage.get('bills')
   const nominations = location.query.nominations || storage.get('nominations')
   const congress = location.query.congress || storage.get('congress')
   const state = location.query.state || storage.get('state')
   const city = location.query.city || storage.get('city')
   const userCity = user && user.address ? user.address.city : geoip ? geoip.city : ''
   const userState = user && user.address ? user.address.state : geoip ? geoip.regionName : ''
-  const pending_committee = location.query.pending_committee || storage.get('pending_committee')
+
+  const recently_introduced = location.query.recently_introduced || storage.get('recently_introduced')
+  const recent_update = location.query.recent_update || storage.get('recent_update')
+  const floor_consideration = location.query.floor_consideration || storage.get('floor_consideration')
+  const committee_discharged = location.query.committee_discharged || storage.get('committee_discharged')
+  const committee_action = location.query.committee_action || storage.get('committee_action')
   const passed_one = location.query.passed_one || storage.get('passed_one')
   const failed_one = location.query.failed_one || storage.get('failed_one')
   const passed_both = location.query.passed_both || storage.get('passed_both')
   const resolving = location.query.resolving || storage.get('resolving')
   const to_exec = location.query.to_exec || storage.get('to_exec')
-  const pending_exec_cal = location.query.pending_exec_cal || storage.get('pending_exec_cal')
   const enacted = location.query.enacted || storage.get('enacted')
   const veto = location.query.veto || storage.get('veto')
-  const withdrawn = location.query.withdrawn || storage.get('withdrawn')
-  const failed = location.query.failed || storage.get('failed')
 
 
   return html()`
       <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
       <div class = "control">
-      <div id = "filter_checkboxes">
+      <div id = "filter_checkboxes" style="display:block;">
       <div>
      <p><h3>Juridstiction </h3>
         <label class="checkbox has-text-grey">
@@ -487,20 +446,19 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
         </div>
         <div>
         <p>
-        <h3>Status</h3>
+        <h3>Awaiting Legislative Action</h3>
         <label class="checkbox has-text-grey">
-            <input onclick=${togglePendingCommittee(storage)} type="checkbox" name="pending_committee" checked=${!!pending_committee}>
-            Pending Committee
+            <input onclick=${toggleCommitteeAction(storage)} type="checkbox" name="committee_action" checked=${!!committee_action}>
+            Committee Action
           </label>
           <label class="checkbox has-text-grey">
-          <input onclick=${toggleCommitteeConsideration(storage)} type="checkbox" name="committee_consideration" checked=${!!committee_consideration}>
-          Committee Consideration
+          <input onclick=${toggleCommitteeDischarged(storage)} type="checkbox" name="committee_discharged" checked=${!!committee_discharged}>
+          Discharged from Committee
           </label>
           <label class="checkbox has-text-grey">
-          <input onclick=${toggleAwaitingFloor(storage)} type="checkbox" name="awaiting_floor" checked=${!!awaiting_floor}>
-          Awaiting Floor or Committee Action
+          <input onclick=${toggleFloorConsideration(storage)} type="checkbox" name="floor_consideration" checked=${!!floor_consideration}>
+          Floor Consideration
           </label>
-          </div>
           <button type="submit" class="filter-submit is-hidden">Update</button>
 
           <label class="checkbox has-text-grey">
@@ -510,53 +468,34 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
 
             <label class="checkbox has-text-grey">
                 <input onclick=${toggleFailedOne(storage)} type="checkbox" name="failed_one" checked=${!!failed_one}>
-                Failed Chamber
+                Failed or Withdrawn
               </label>
 
               <label class="checkbox has-text-grey">
-                  <input onclick=${togglePassedBoth(storage)} type="checkbox" name="passed_both" checked=${!!passed_both}>
-                  Passed Both Chambers
+                <input onclick=${togglePassedBoth(storage)} type="checkbox" name="passed_both" checked=${!!passed_both}>
+                Passed Both Chambers
                 </label>
 
-                    <label class="checkbox has-text-grey">
-                    <input onclick=${toggleResolving(storage)} type="checkbox" name="resolving" checked=${!!resolving}>
-                    Resolving Differences
-                  </label>
-                  <label class="checkbox has-text-grey">
-                      <input onclick=${toggleExecCal(storage)} type="checkbox" name="pending_exec_cal" checked=${!!pending_exec_cal}>
-                      Pending Executive Calendar
-                    </label>
-                    </p>
-                    </div>
-                    <div>
+              <label class="checkbox has-text-grey">
+                <input onclick=${toggleResolving(storage)} type="checkbox" name="resolving" checked=${!!resolving}>
+                Resolving Differences
+                </label>
                     <p>
-                    <h3>Awaiting Executive Action:</h3>
-                  <label class="checkbox has-text-grey">
-                      <input onclick=${toggleToExec(storage)} type="checkbox" name="to_exec" checked=${!!to_exec}>
-                      To Executive
-                    </label>
+            <h3>Awaiting Executive Action:</h3>
+              <label class="checkbox has-text-grey">
+                <input onclick=${toggleToExec(storage)} type="checkbox" name="to_exec" checked=${!!to_exec}>
+                To Executive
+                </label>
 
+              <label class="checkbox has-text-grey">
+                <input onclick=${toggleEnacted(storage)} type="checkbox" name="enacted" checked=${!!enacted}>
+                Enacted
+                </label>
 
-
-                      <label class="checkbox has-text-grey">
-                          <input onclick=${toggleEnacted(storage)} type="checkbox" name="enacted" checked=${!!enacted}>
-                          Enacted
-                        </label>
-
-                        <label class="checkbox has-text-grey">
-                            <input onclick=${toggleVeto(storage)} type="checkbox" name="veto" checked=${!!veto}>
-                            Vetoed
-                          </label>
-
-                          <label class="checkbox has-text-grey">
-                              <input onclick=${toggleWithdrawn(storage)} type="checkbox" name="withdrawn" checked=${!!withdrawn}>
-                              Withdrawn
-                            </label>
-
-                            <label class="checkbox has-text-grey">
-                                <input onclick=${toggleFailed(storage)} type="checkbox" name="failed" checked=${!!failed}>
-                                Failed Nominations
-                              </label>
+              <label class="checkbox has-text-grey">
+                <input onclick=${toggleVeto(storage)} type="checkbox" name="veto" checked=${!!veto}>
+                Vetoed
+                </label>
 </p>
       </div>
       ${(!user || !user.address) && geoip ? [addAddressNotification(geoip, user)] : []}
@@ -592,8 +531,8 @@ const measureListRow = (s) => {
   return `
     <div class="card highlight-hover">
       <div class="card-content">
-        <div class="columns">
-          <div class="column">
+       <div class="columns">
+       <div class="column">
             <h3><a href="${measureUrl}">${s.title}</a></h3>
             ${s.introduced_at ? [`
             <div class="is-size-7 has-text-grey">
@@ -626,8 +565,8 @@ const measureListRow = (s) => {
             ${voteButton(s)}
             ${s.summary ? summaryTooltipButton(s.id, s.short_id, s.summary) : ''}
           </div>
-        </div>
-      </div>
+          </div>
+          </div>
     </div>
   `
 }
@@ -650,9 +589,9 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
 
 
   const recently_introduced = query.recently_introduced || storage.get('recently_introduced')
-  const awaiting_floor = query.awaiting_floor || storage.get('awaiting_floor')
-  const committee_consideration = query.committee_consideration || storage.get('committee_consideration')
-  const pending_committee = query.pending_committee || storage.get('pending_committee')
+  const committee_discharged = query.committee_discharged || storage.get('committee_discharged')
+  const floor_consideration = query.floor_consideration || storage.get('floor_consideration')
+  const committee_action = query.committee_action || storage.get('committee_action')
   const passed_one = query.passed_one || storage.get('passed_one')
   const failed_one = query.failed_one || storage.get('failed_one')
   const passed_both = query.passed_both || storage.get('passed_both')
@@ -664,43 +603,38 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const withdrawn_check = query.withdrawn || storage.get('withdrawn')
   const failed_check = query.failed || storage.get('failed')
 
-  const afvc = awaiting_floor === 'on'
-  const cc = committee_consideration === 'on'
-  const pc = pending_committee === 'on'
+  const cd = committee_discharged === 'on'
+  const flc = floor_consideration === 'on'
+  const ca = committee_action === 'on'
   const poc = passed_one === 'on'
-  const foc = failed_one === 'on'
+  const fw = failed_one === 'on' || withdrawn_check === 'on' || failed_check === 'on'
   const pbc = passed_both === 'on'
   const rc = resolving === 'on'
   const tec = to_exec === 'on'
   const ecc = pending_exec_cal === 'on'
   const vc = veto_check === 'on'
-  const wc = withdrawn_check === 'on'
-  const fc = failed_check === 'on'
   const ec = enacted_check === 'on'
-  const lastAction = cc || afvc || pc || poc || foc || pbc || rc || tec || ecc || vc || wc || fc || ec ? 'last_action_at' : 'created_at'
+  const recent_update = query.recent_update || storage.get('recent_update')
+  const lastAction = flc || cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec || recent_update === 'on' ? 'last_action_at' : 'created_at'
 
   const ri = recently_introduced === 'on'
-  const introducedCheck = ri && (cc || afvc || pc || poc || foc || pbc || rc || tec || ecc || vc || wc || fc || ec) ? `Introduced,` : ri ? `Introduced` : ''
-  const comCheck = cc && (afvc || pc || poc || foc || pbc || rc || tec || ecc || vc || wc || fc || ec) ? 'Committee Consideration,' : cc ? 'Committee Consideration' : ''
-  const awaitingFloorCheck = afvc && (pc || poc || foc || pbc || rc || tec || ecc || vc || wc || fc || ec) ? 'Awaiting floor or committee vote,' : afvc ? 'Awaiting floor or committee vote' : ''
-  const pendingCheck = pc && (poc || foc || pbc || rc || tec || ecc || vc || wc || fc || ec) ? 'Pending Committee,' : pc ? 'Pending Committee' : ''
-  const passedOneCheck = poc && (foc || pbc || rc || tec || ecc || vc || wc || fc || ec) ? 'Passed One Chamber,' : poc ? 'Passed One Chamber' : ''
-  const failedOne = foc && (pbc || rc || tec || ecc || vc || wc || fc || ec) ? 'Failed One Chamber,' : foc ? 'Failed One Chamber' : ''
-  const passedBoth = pbc && (rc || tec || ecc || vc || wc || fc || ec) ? 'Passed Both Chambers,' : pbc ? 'Passed Both Chambers' : ''
-  const resolvingCheck = rc && (tec || ecc || vc || wc || fc || ec) ? 'Resolving Differences,' : rc ? 'Resolving Differences' : ''
-  const execCheck = tec && (ecc || vc || wc || fc || ec) ? 'To Executive,' : tec ? 'To Executive' : ''
-  const execCalCheck = ecc && (vc || wc || fc || ec) ? 'Pending Executive Calendar,' : ecc ? 'Pending Executive Calendar' : ''
-  const enactedCheck = ec && (vc || wc || fc) ? 'Enacted,' : ec ? 'Enacted' : ''
-  const vetoedCheck = vc && (wc || fc) ? 'Veto Actions,' : vc ? 'Veto Actions' : ''
-  const withdrawnCheck = wc && (fc) ? 'Withdrawn,' : wc ? 'Withdrawn' : ''
-  const failedCheck = fc ? 'Failed or Returned to Executive' : ''
+  const introducedCheck = ri && (flc || cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? `Introduced,Pending Committee` : ri ? `Introduced,Pending Committee` : ''
+  const floorCheck = flc && (cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? 'Floor Consideration,Pending Executive Calendar,' : flc ? 'Floor Consideration,Pending Executive Calendar' : ''
+  const dischargedCheck = cd && (ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? ',' : cd ? '' : ''
+  const committeeActionCheck = ca && (poc || fw || pbc || rc || tec || ecc || vc || ec) ? 'Committee Consideration,' : fw ? 'Committee Consideration' : ''
+  const passedOneCheck = poc && (fw || pbc || rc || tec || ecc || vc || ec) ? 'Passed One Chamber,' : poc ? 'Passed One Chamber' : ''
+  const failedOne = fw && (pbc || rc || tec || ecc || vc || ec) ? 'Failed One Chamber,Withdrawn,Failed or Returned to Executive,' : fw ? 'Failed One Chamber,Withdrawn,Failed or Returned to Executive' : ''
+  const passedBoth = pbc && (rc || tec || ecc || vc || ec) ? 'Passed Both Chambers,' : pbc ? 'Passed Both Chambers' : ''
+  const resolvingCheck = rc && (tec || ecc || vc || ec) ? 'Resolving Differences,' : rc ? 'Resolving Differences' : ''
+  const execCheck = tec && (ecc || vc || ec) ? 'To Executive,' : tec ? 'To Executive' : ''
+  const enactedCheck = ec && vc ? 'Enacted,' : ec ? 'Enacted' : ''
+  const vetoedCheck = vc ? 'Veto Actions,' : ''
 
-  const recent_update = query.recent_update || storage.get('recent_update')
-  const updated_query = recently_introduced === 'on' || cc || afvc || pc || poc || foc || pbc || rc || tec || ecc || vc || wc || fc || ec ? '' : recent_update === 'on' ? '&status=neq.Introduced' : ''
-  const introduced_query = updated_query === 'on' || cc || afvc || pc || poc || foc || pbc || rc || tec || ecc || vc || wc || fc || ec ? '' : recently_introduced === 'on' ? '&status=eq.Introduced' : ''
-  const allStatus = ri || cc || afvc || pc || poc || foc || pbc || rc || tec || ecc || vc || wc || fc || ec ? '' : `Introduced,Awaiting floor or committee vote,Committee Consideration,Pending Committee,Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar,Enacted,Withdrawn,Failed or Returned to Executive`
+  const updated_query = recently_introduced === 'on' || flc || cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec ? '' : recent_update === 'on' ? '&status=neq.Introduced' : ''
+  const introduced_query = updated_query === 'on' || flc || cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec ? '' : recently_introduced === 'on' ? '&status=eq.Introduced' : ''
+  const allStatus = ri || flc || cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec ? '' : `Introduced,Floor Consideration,Committee Consideration,Passed One Chamber,Failed One Chamber,Passed Both Chambers,Resolving Differences,To Executive,Pending Executive Calendar,Enacted,Withdrawn,Failed or Returned to Executive`
 
-  const status_query = `&status=in.(${introducedCheck}${comCheck}${awaitingFloorCheck}${pendingCheck}${passedOneCheck}${failedOne}${passedBoth}${resolvingCheck}${execCheck}${execCalCheck}${enactedCheck}${vetoedCheck}${withdrawnCheck}${failedCheck}${allStatus})`
+  const status_query = `&status=in.(${introducedCheck}${floorCheck}${dischargedCheck}${committeeActionCheck}${passedOneCheck}${failedOne}${passedBoth}${resolvingCheck}${execCheck}${enactedCheck}${vetoedCheck}${allStatus})`
 
   const from_liquid = query.from_liquid || storage.get('from_liquid')
   const from_leg_body = query.from_leg_body || storage.get('from_leg_body')
@@ -773,12 +707,15 @@ const proposeButton = () => [`
     <span class="has-text-weight-semibold">Propose Legislation</span>
   </a>
 `]
+
 const filterButton = () => [`
-  <class="button is-primary">
+  <a href='#' class="button is-primary">
+
     <span class="icon"><i class="fa fa-file"></i></span>
     <span class="has-text-weight-semibold">Show Filters</span>
   </a>
 `]
+
 const summaryTooltipButton = (id, short_id, summary) => [`
   <a href="${`/legislation/${short_id}`}" class="is-hidden-mobile">
     <br />
@@ -791,7 +728,7 @@ const summaryTooltipButton = (id, short_id, summary) => [`
   </a>
 `]
 
-const noBillsMsg = (from_liquid, from_leg_body, recently_introduced, recent_update, awaiting_floor, committee_consideration) => html()`
+const noBillsMsg = (from_liquid, from_leg_body, recently_introduced, recent_update, committee_discharged, floor_consideration) => html()`
 <div>
 ${from_liquid === 'on' && from_leg_body === 'on' ? [`
   <p class="is-size-5">Please select either Liquid or Imported bills.
@@ -802,7 +739,7 @@ from_leg_body === 'on' ? [`
   <p class="is-size-5">Liquid doesn't have this location's imported bill list yet, please change your selected criteria to view legislative items.
 
   </p>
-`] : recent_update === 'on' || committee_consideration === 'on' || awaiting_floor === 'on' ? [`
+`] : recent_update === 'on' || floor_consideration === 'on' || committee_discharged === 'on' ? [`
   <p class="is-size-5">Liquid proposals do not have recent actions. Please change your selected criteria to view legislative items.
 
   </p>

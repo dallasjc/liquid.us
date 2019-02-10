@@ -1,5 +1,6 @@
 const { api, html, preventDefault, redirect } = require('../helpers')
 const activityIndicator = require('./ActivityIndicator')
+const stateNames = require('datasets-us-states-abbr-names')
 
 module.exports = {
   init: ({ legislatures, location = {}, measures = {}, measuresList = [], measuresQuery, storage, user }) => [{
@@ -390,6 +391,14 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
   const veto = location.query.veto || storage.get('veto')
 
 
+  // Add legislature from URL to legislature selection
+  if (location.query.legislature && !legislatures.some(({ abbr }) => abbr === location.query.legislature)) {
+    legislatures.push({
+      abbr: location.query.legislature,
+      name: stateNames[location.query.legislature] || location.query.legislature,
+    })
+  }
+
   return html()`
       <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
       <div class = "control">
@@ -536,8 +545,7 @@ const measureListRow = (s) => {
             <h3><a href="${measureUrl}">${s.title}</a></h3>
             ${s.introduced_at ? [`
             <div class="is-size-7 has-text-grey">
-              <strong class="has-text-grey">${s.type} ${s.number}</strong>
-              &mdash;
+              <span class="has-text-weight-bold">${s.short_id.replace(/^[^-]+-(\D+)(\d+)/, '$1 $2').toUpperCase()}</span> &mdash;
               ${s.sponsor_first_name
                 ? [`Introduced by&nbsp;<a href=${`/${s.sponsor_username}`}>${s.sponsor_first_name} ${s.sponsor_last_name}</a>&nbsp;on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
                 : [`Introduced on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
@@ -578,6 +586,7 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const terms = query.terms && query.terms.replace(/[^\w\d ]/g, '').replace(/(hr|s) (\d+)/i, '$1$2').replace(/(\S)\s+(\S)/g, '$1 & $2')
   const fts = terms ? `&tsv=fts(simple).${encodeURIComponent(terms)}` : ''
 
+<<<<<<< HEAD
   const userCitySt = user && user.address ? `"${user.address.city}, ${user.address.state}"` : ''
   const userState = user && user.address ? user.address.state : ''
   const congress = query.congress || storage.get('congress')
@@ -602,6 +611,13 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const veto_check = query.veto || storage.get('veto')
   const withdrawn_check = query.withdrawn || storage.get('withdrawn')
   const failed_check = query.failed || storage.get('failed')
+=======
+  const orders = {
+    upcoming: '&status=not.eq.Introduced&introduced_at=not.is.null&failed_lower_at=is.null&failed_upper_at=is.null&or=(passed_lower_at.is.null,passed_upper_at.is.null,and(passed_lower_at.is.null,passed_upper_at.is.null))&order=next_agenda_action_at.asc.nullslast,next_agenda_begins_at.asc.nullslast,next_agenda_category.asc.nullslast,last_action_at.desc.nullslast,number.desc',
+    new: '&introduced_at=not.is.null&order=introduced_at.desc,number.desc',
+    proposed: '&published=is.true&introduced_at=is.null&order=created_at.desc,title.asc',
+  }
+>>>>>>> dde049c1185f864f4f52c72597a8d8a1acd4634d
 
   const cd = committee_discharged === 'on'
   const flc = floor_consideration === 'on'
@@ -652,8 +668,12 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   ]
 
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
+<<<<<<< HEAD
   const api_url = `/measures_detailed?select=${fields.join(',')}${from_liquid_query}${from_leg_body_query}${status_query}${type_query}${updated_query}${introduced_query}${legCheck}${fts}&published=is.true&order=${lastAction}.desc.nullslast&limit=40`
   console.log(api_url)
+=======
+  const api_url = `/measures_detailed?select=${fields.join(',')}${hide_direct_votes_query}${fts}${legislature}&type=not.eq.nomination${order}&limit=40`
+>>>>>>> dde049c1185f864f4f52c72597a8d8a1acd4634d
 
   return api(api_url, { storage }).then((measures) => dispatch({
     type: 'receivedMeasures',
@@ -695,7 +715,7 @@ const voteButton = (s) => {
       voteBtnClass = `button is-small ${votePositionClass(s.vote_position)}`
     }
   }
-  return [`<a style="white-space: inherit; height: auto;" class="${voteBtnClass} href=${`/legislation/${s.short_id}`}">
+  return [`<a style="white-space: inherit; height: auto;" class="${voteBtnClass}" href="${`/legislation/${s.short_id}`}">
     <span class="icon" style="align-self: flex-start;"><i class="${voteBtnIcon}"></i></span>
     <span class="has-text-weight-semibold">${voteBtnTxt}</span>
   </a>`]

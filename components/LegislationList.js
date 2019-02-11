@@ -640,7 +640,7 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const lastAction = flc || cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec || recent_update === 'on' ? 'last_action_at' : 'created_at'
 
   const ri = recently_introduced === 'on'
-  const introducedCheck = ri && (flc || cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? `Introduced,Pending Committee` : ri ? `Introduced,Pending Committee` : ''
+  const introducedCheck = ri && (flc || cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? `Introduced,Pending Committee,` : ri ? `Introduced,Pending Committee` : ''
   const floorCheck = flc && (cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? 'Floor Consideration,Pending Executive Calendar,' : flc ? 'Floor Consideration,Pending Executive Calendar' : ''
   const dischargedCheck = cd && (ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? ',' : cd ? '' : ''
   const committeeActionCheck = ca && (poc || fw || pbc || rc || tec || ecc || vc || ec) ? 'Committee Consideration,' : fw ? 'Committee Consideration' : ''

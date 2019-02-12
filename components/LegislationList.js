@@ -308,7 +308,7 @@ const measureListRow = (s) => {
             ${s.introduced_at ? [`
             <div class="is-size-7 has-text-grey">
               ${s.sponsor_first_name && s.legislature_name
-                ? [`Introduced by&nbsp;<a href=${`/${s.sponsor_username}`}>${s.sponsor_first_name} ${s.sponsor_last_name}</a>&nbsp;on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
+                ? [`Introduced in the ${s.legislature_name} by&nbsp;<a href=${`/${s.sponsor_username}`}>${s.chamber === 'Upper' ? 'Senator ' : `Rep. `}${s.sponsor_first_name} ${s.sponsor_last_name}</a>&nbsp;on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
                 : s.legislature_name
                 ? [`Introduced in the ${s.legislature_name} legislature on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
                 : [`Introduced on ${(new Date(s.introduced_at)).toLocaleDateString()}`]

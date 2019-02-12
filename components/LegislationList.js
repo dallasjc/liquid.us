@@ -3,15 +3,17 @@ const activityIndicator = require('./ActivityIndicator')
 const stateNames = require('datasets-us-states-abbr-names')
 
 module.exports = {
-  init: ({ legislatures, location = {}, measures = {}, measuresList = [], measuresQuery, storage, user }) => [{
+  init: ({ legislatures, location = {}, measures = {}, measuresList = [], measuresQuery, storage, user, showFilters }) => [{
     location,
     legislatures,
     loading: true,
     measures,
     measuresList,
     measuresQuery,
+    showFilters,
   }, initialize(measuresQuery, location, storage, user)],
   update: (event, state) => {
+    console.log('update()', event, state)
     switch (event.type) {
       case 'error':
         return [{ ...state, loading: false }]
@@ -35,11 +37,16 @@ module.exports = {
   view: (state, dispatch) => {
     const { loading, measuresList, location, measures } = state
     const { query } = location
+
     return html()`
       <div class="section">
         <div class="container is-widescreen">
-          <div class="has-text-right has-text-left-mobile">
-          ${filterButton()} ${proposeButton()}</div>
+          <div>
+            ${filterButton(state, dispatch)}
+            <span class="is-right has-text-left-mobile">
+              ${proposeButton()}
+            </span>
+          </div>
           <br>
           ${filterTabs(state, dispatch)}
           ${loading ? activityIndicator() :
@@ -102,270 +109,16 @@ module.exports = {
   },
 }
 
-const toggleCongress = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('congress', 'on')
-    } else {
-      storage.unset('congress')
-    }
-    btn.click()
-  }
-}
 
-const toggleState = (storage) => (event) => {
+const toggleFilter = (storage, filterName) => (event) => {
   const btn = document.querySelector('.filter-submit')
   if (btn.disabled) {
     event.preventDefault()
   } else {
     if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('state', 'on')
+      storage.set(filterName, 'on')
     } else {
-      storage.unset('state')
-    }
-    btn.click()
-  }
-}
-const toggleCity = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('city', 'on')
-    } else {
-      storage.unset('city')
-    }
-    btn.click()
-  }
-}
-const toggleRecentlyIntroduced = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('recently_introduced', 'on')
-    } else {
-      storage.unset('recently_introduced')
-    }
-    btn.click()
-  }
-}
-const toggleBills = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('bills', 'on')
-    } else {
-      storage.unset('bills')
-    }
-    btn.click()
-  }
-}
-const toggleNominations = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('nominations', 'on')
-    } else {
-      storage.unset('nominations')
-    }
-    btn.click()
-  }
-}
-const toggleResolutions = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('resolutions', 'on')
-    } else {
-      storage.unset('resolutions')
-    }
-    btn.click()
-  }
-}
-const toggleLiquidProposals = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('from_liquid', 'on')
-    } else {
-      storage.unset('from_liquid')
-    }
-    btn.click()
-  }
-}
-const toggleCommitteeAction = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('committee_action', 'on')
-    } else {
-      storage.unset('committee_action')
-    }
-    btn.click()
-  }
-}
-const togglePassedOne = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('passed_one', 'on')
-    } else {
-      storage.unset('passed_one')
-    }
-    btn.click()
-  }
-}
-const toggleFailedOne = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('failed_one', 'on')
-    } else {
-      storage.unset('failed_one')
-    }
-    btn.click()
-  }
-}
-
-const togglePassedBoth = (storage) => (event) => {
- const btn = document.querySelector('.filter-submit')
- if (btn.disabled) {
-   event.preventDefault()
- } else {
-   if (event.currentTarget && event.currentTarget.checked) {
-     storage.set('passed_both', 'on')
-   } else {
-     storage.unset('passed_both')
-   }
-   btn.click()
- }
-}
-
-const toggleResolving = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('resolving', 'on')
-    } else {
-      storage.unset('resolving')
-    }
-    btn.click()
-  }
-}
-
-const toggleToExec = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('to_exec', 'on')
-    } else {
-      storage.unset('to_exec')
-    }
-    btn.click()
-  }
-}
-
-
-const toggleEnacted = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('enacted', 'on')
-    } else {
-      storage.unset('enacted')
-    }
-    btn.click()
-  }
-}
-
-const toggleVeto = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('veto', 'on')
-    } else {
-      storage.unset('veto')
-    }
-    btn.click()
-  }
-}
-
-const toggleIntroducedInLeg = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('from_leg_body', 'on')
-    } else {
-      storage.unset('from_leg_body')
-    }
-    btn.click()
-  }
-}
-const toggleRecentUpdates = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('recent_update', 'on')
-    } else {
-      storage.unset('recent_update')
-    }
-    btn.click()
-  }
-}
-const toggleCommitteeDischarged = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('committee_discharged', 'on')
-    } else {
-      storage.unset('committee_discharged')
-    }
-    btn.click()
-  }
-}
-const toggleFloorConsideration = (storage) => (event) => {
-  const btn = document.querySelector('.filter-submit')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      storage.set('floor_consideration', 'on')
-    } else {
-      storage.unset('floor_consideration')
+      storage.unset(filterName)
     }
     btn.click()
   }
@@ -381,6 +134,7 @@ const updateFilter = (event, location, dispatch) => {
 }
 
 const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
+  const showFilters = location.query.show_filters || storage.get('show_filters')
   const from_liquid = location.query.from_liquid || storage.get('from_liquid')
   const from_leg_body = location.query.from_leg_body || storage.get('from_leg_body')
   const bills = location.query.floor_consideration || storage.get('bills')
@@ -405,7 +159,6 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
   const enacted = location.query.enacted || storage.get('enacted')
   const veto = location.query.veto || storage.get('veto')
 
-
   // Add legislature from URL to legislature selection
   if (location.query.legislature && !legislatures.some(({ abbr }) => abbr === location.query.legislature)) {
     legislatures.push({
@@ -415,111 +168,109 @@ const filterForm = (geoip, legislatures, storage, location, user, dispatch) => {
   }
 
   return html()`
-      <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
-      <div class = "control">
-      <div id = "filter_checkboxes" style="display:block;">
-      <div class = "columns">
-      <div class = "column"
-     <h3>Juridstiction </h3><br>
-        <label class="checkbox has-text-grey">
-            <input onclick=${toggleCongress(storage)} type="checkbox" name="congress" checked=${!!congress}>
-            Congress
-          </label>
-          <br>
-          <label class="checkbox has-text-grey">
-              <input onclick=${toggleState(storage)} type="checkbox" name="state" checked=${!!state}>
-              ${userState}
+    <form name="legislation_filters" class="is-inline-block is-centered" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
+      <button type="submit" class="filter-submit is-hidden">Update</button>
+      <input type="checkbox" onclick=${toggleFilter(storage, 'show_filters')} name="show_filters" checked=${!!showFilters} class="is-hidden" />
+      <div id="filter_checkboxes" style="display:block;">
+        <div class="columns is-centered">
+          <div class="column">
+            <h3>Jurisdiction</h3>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'congress')} type="checkbox" name="congress" checked=${!!congress} />
+              Congress
+            </label>
+              <br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'state')} type="checkbox" name="state" checked=${!!state} />
+                ${userState}
             </label>
             <br>
-          <label class="checkbox has-text-grey">
-                <input onclick=${toggleCity(storage)} type="checkbox" name="city" checked=${!!city}>
-                ${userCity}
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'city')} type="checkbox" name="city" checked=${!!city} />
+              ${userCity}
             </label>
+          </div>
 
-        </div>
-        <div class = "column">
-        <h3>Type</h3>
-        <label class="checkbox has-text-grey">
-        <input onclick=${toggleRecentUpdates(storage)} type="checkbox" name="recent_update" checked=${!!recent_update}>
-        Updated
-        </label><br>
-        <label class="checkbox has-text-grey">
-            <input onclick=${toggleLiquidProposals(storage)} type="checkbox" name="from_liquid" checked=${!!from_liquid}>
-            Liquid Proposals
-          </label><br>
-          <label class="checkbox has-text-grey">
-          <input onclick=${toggleIntroducedInLeg(storage)} type="checkbox" name="from_leg_body" checked=${!!from_leg_body}>
-          Imported
-          </label><br>
-          <label class="checkbox has-text-grey">
-          <input onclick=${toggleBills(storage)} type="checkbox" name="bills" checked=${!!bills}>
-          Bills
-          </label><br>
-          <label class="checkbox has-text-grey">
-          <input onclick=${toggleNominations(storage)} type="checkbox" name="nominations" checked=${!!nominations}>
-          Nominations
-          </label><br>
-          <label class="checkbox has-text-grey">
-          <input onclick=${toggleResolutions(storage)} type="checkbox" name="resolutions" checked=${!!resolutions}>
-          Resolutions
-          </label>
-                    </div>
-        <div class = "column">
-        <h3>Legislative Action</h3>
-        <label class="checkbox has-text-grey">
-        <input onclick=${toggleRecentlyIntroduced(storage)} type="checkbox" name="recently_introduced" checked=${!!recently_introduced}>
-        Introduced
-      </label><br>
-        <label class="checkbox has-text-grey">
-            <input onclick=${toggleCommitteeAction(storage)} type="checkbox" name="committee_action" checked=${!!committee_action}>
-            Committee Action
-          </label><br>
-          <label class="checkbox has-text-grey">
-          <input onclick=${toggleCommitteeDischarged(storage)} type="checkbox" name="committee_discharged" checked=${!!committee_discharged}>
-          Committee Discharged
-          </label><br>
-          <label class="checkbox has-text-grey">
-          <input onclick=${toggleFloorConsideration(storage)} type="checkbox" name="floor_consideration" checked=${!!floor_consideration}>
-          Floor Consideration
-          </label><br>
-          <button type="submit" class="filter-submit is-hidden">Update</button>
-          <label class="checkbox has-text-grey">
-              <input onclick=${togglePassedOne(storage)} type="checkbox" name="passed_one" checked=${!!passed_one}>
+          <div class="column">
+            <h3>Type</h3>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'from_leg_body')} type="checkbox" name="from_leg_body" checked=${!!from_leg_body} />
+              Imported
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'Bills')} type="checkbox" name="bills" checked=${!!bills} />
+              Bills
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'nominations')} type="checkbox" name="nominations" checked=${!!nominations} />
+              Nominations
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'from_liquid')} type="checkbox" name="from_liquid" checked=${!!from_liquid} />
+              Liquid Proposals
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'recent_updates')} type="checkbox" name="recent_update" checked=${!!recent_update} />
+              Updated
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'resolutions')} type="checkbox" name="resolutions" checked=${!!resolutions} />
+              Resolutions
+            </label>
+          </div>
+
+          <div class="column">
+            <h3>Legislative Action</h3>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'recently_introduced')} type="checkbox" name="recently_introduced" checked=${!!recently_introduced} />
+              Introduced
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'committee_action')} type="checkbox" name="committee_action" checked=${!!committee_action} />
+              Committee Action
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'committee_discharged')} type="checkbox" name="committee_discharged" checked=${!!committee_discharged} />
+              Committee Discharged
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'floor_consideration')} type="checkbox" name="floor_consideration" checked=${!!floor_consideration} />
+              Floor Consideration
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'passed_one')} type="checkbox" name="passed_one" checked=${!!passed_one} />
               Passed One Chamber
             </label><br>
-
             <label class="checkbox has-text-grey">
-                <input onclick=${toggleFailedOne(storage)} type="checkbox" name="failed_one" checked=${!!failed_one}>
-                Failed or Withdrawn
-              </label>
+              <input onclick=${toggleFilter(storage, 'failed_one')} type="checkbox" name="failed_one" checked=${!!failed_one} />
+              Failed or Withdrawn
+            </label>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'passed_both')} type="checkbox" name="passed_both" checked=${!!passed_both} />
+              Passed Both Chambers
+            </label>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'resolving')} type="checkbox" name="resolving" checked=${!!resolving} />
+              Resolving Differences
+            </label>
+          </div>
 
-              <label class="checkbox has-text-grey">
-                <input onclick=${togglePassedBoth(storage)} type="checkbox" name="passed_both" checked=${!!passed_both}>
-                Passed Both Chambers
-                </label>
-
-              <label class="checkbox has-text-grey">
-                <input onclick=${toggleResolving(storage)} type="checkbox" name="resolving" checked=${!!resolving}>
-                Resolving Differences
-                </label>
-                    </div>
-                    <div class = "column">
+          <div class="column">
             <h3>Executive Action</h3>
-              <label class="checkbox has-text-grey">
-                <input onclick=${toggleToExec(storage)} type="checkbox" name="to_exec" checked=${!!to_exec}>
-                To Executive
-                </label><br>
-
-              <label class="checkbox has-text-grey">
-                <input onclick=${toggleEnacted(storage)} type="checkbox" name="enacted" checked=${!!enacted}>
-                Enacted
-                </label><br>
-
-              <label class="checkbox has-text-grey">
-                <input onclick=${toggleVeto(storage)} type="checkbox" name="veto" checked=${!!veto}>
-                Vetoed
-                </label>
-</div>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'to_exec')} type="checkbox" name="to_exec" checked=${!!to_exec} />
+              To Executive
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'enacted')} type="checkbox" name="enacted" checked=${!!enacted} />
+              Enacted
+            </label><br>
+            <label class="checkbox has-text-grey">
+              <input onclick=${toggleFilter(storage, 'veto')} type="checkbox" name="veto" checked=${!!veto} />
+              Vetoed
+            </label>
+          </div>
+        </div>
       </div>
       ${(!user || !user.address) && geoip ? [addAddressNotification(geoip, user)] : []}
     </form>
@@ -536,14 +287,11 @@ const addAddressNotification = (geoip = {}, user) => {
 }
 
 const filterTabs = ({ geoip, legislatures, location, storage, user }, dispatch) => {
-
+  const showFilters = location.query.show_filters || storage.get('show_filters')
   return html()`
-      <div class="columns">
-
-      <div class="column has-text-right has-text-left-mobile">
-        ${filterForm(geoip, legislatures, storage, location, user, dispatch)}
-      </div>
-    </div>
+    <div class=${showFilters ? 'is-centered' : 'is-hidden'}>
+      ${filterForm(geoip, legislatures, storage, location, user, dispatch)}
+    </div><br>
   `
 }
 
@@ -555,15 +303,17 @@ const measureListRow = (s) => {
     <div class="card highlight-hover">
       <div class="card-content">
        <div class="columns">
-       <div class="column">
+        <div class="column">
             <h3><a href="${measureUrl}">${s.title}</a></h3>
             ${s.introduced_at ? [`
             <div class="is-size-7 has-text-grey">
-              <span class="has-text-weight-bold">${s.short_id.replace(/^[^-]+-(\D+)(\d+)/, '$1 $2').toUpperCase()}</span> &mdash;
-              ${s.sponsor_first_name
+              ${s.sponsor_first_name && s.legislature_name
                 ? [`Introduced by&nbsp;<a href=${`/${s.sponsor_username}`}>${s.sponsor_first_name} ${s.sponsor_last_name}</a>&nbsp;on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
+                : s.legislature_name
+                ? [`Introduced in the ${s.legislature_name} legislature on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
                 : [`Introduced on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
               }
+
               ${s.summary ? [`
                 <p class="is-hidden-tablet"><strong class="has-text-grey">Has summary</strong></p>
               `] : []}
@@ -574,21 +324,21 @@ const measureListRow = (s) => {
               `] : `${s.status}</p>`}
               <strong class="has-text-grey">Last action:</strong> ${new Date(s.last_action_at).toLocaleDateString()}
             </div>
-            `] : [`
-              <div class="is-size-7 has-text-grey">
-                ${s.author_username
-                  ? `Authored by <a href="${`/${s.author_username}`}">${s.author_first_name} ${s.author_last_name}</a>`
-                  : `Authored by Anonymous`}
-                on ${(new Date(s.created_at)).toLocaleDateString()}
-              </div>
+          `] : [`
+            <div class="is-size-7 has-text-grey">
+              ${s.author_username & s.legislature_name
+                ? `Authored for ${s.legislature_name} by <a href="${`/${s.author_username}`}">${s.author_first_name} ${s.author_last_name}</a>`
+                : `Authored for ${s.legislature_name} by Anonymous`}
+              on ${(new Date(s.created_at)).toLocaleDateString()}
+            </div>
             `]}
           </div>
           <div class="column is-one-quarter has-text-right-tablet has-text-left-mobile">
             ${voteButton(s)}
             ${s.summary ? summaryTooltipButton(s.id, s.short_id, s.summary) : ''}
           </div>
-          </div>
-          </div>
+        </div>
+      </div>
     </div>
   `
 }
@@ -660,24 +410,24 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
 
   const from_liquid = query.from_liquid || storage.get('from_liquid')
   const from_leg_body = query.from_leg_body || storage.get('from_leg_body')
-  const from_liquid_query = from_liquid === 'on' ? '&introduced_at=is.null' : ''
-  const from_leg_body_query = from_leg_body === 'on' ? '&introduced_at=not.is.null' : ''
+  const from_liquid_query = from_liquid === 'on' && from_leg_body !== 'on' ? '&introduced_at=is.null' : ''
+  const from_leg_body_query = from_leg_body === 'on' && from_liquid !== 'on' ? '&introduced_at=not.is.null' : ''
   const nominations = query.nominations || storage.get('nominations')
   const resolutions = query.resolutions || storage.get('resolutions')
   const bills = query.bills || storage.get('bills')
   const bo = bills === 'on'
   const no = nominations === 'on'
   const ro = resolutions === 'on'
-  const nominations_query = no && (bo || ro) ? 'PN,' : no ? 'PN' : ''
-  const resolutions_query = ro && bo ? 'SJR,AJR,AR,SR' : ro ? 'SJR,AJR,AR,SR' : ''
-  const bills_query = bo ? 'HR,SB,AB,S,' : 'HR,SB,AB,S'
-  const allType = 'HR,SB,AB,S,SJR,AJR,PN,AR,SR'
+  const nominations_query = no && (bo || ro) ? 'nomination,' : no ? 'nomination' : ''
+  const resolutions_query = ro && bo ? 'resolution,joint-resolution,' : ro ? 'resolution,joint-resolution' : ''
+  const bills_query = bo ? 'bill' : ''
+  const allType = no || ro || bo ? '' : 'bill,nomination,resolution,constitutional amendment'
   const type_query = `&type=in.(${nominations_query}${resolutions_query}${bills_query}${allType})`
   const fields = [
     'title', 'number', 'type', 'short_id', 'id', 'status',
     'sponsor_username', 'sponsor_first_name', 'sponsor_last_name',
     'introduced_at', 'last_action_at', 'next_agenda_begins_at', 'next_agenda_action_at',
-    'summary', 'legislature_name', 'published', 'created_at', 'author_first_name', 'author_last_name', 'author_username',
+    'summary', 'legislature_name', 'published', 'created_at', 'author_first_name', 'author_last_name', 'author_username', 'chamber',
   ]
 
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
@@ -731,20 +481,27 @@ const voteButton = (s) => {
   </a>`]
 }
 
-const proposeButton = () => [`
-  <a class="button is-primary" href="/legislation/propose">
-    <span class="icon"><i class="fa fa-file"></i></span>
-    <span class="has-text-weight-semibold">Propose Legislation</span>
-  </a>
-`]
+const proposeButton = () =>
+  [`
+    <a class="button is-primary" href="/legislation/propose">
+      <span class="icon"><i class="fa fa-file"></i></span>
+      <span class="has-text-weight-semibold">Propose Legislation</span>
+    </a>
+  `]
 
-const filterButton = () => [`
-  <a href='#' class="button is-primary">
+const toggleShowFilters = () => {
+  document.querySelector('[name="show_filters"]').click()
+}
 
-    <span class="icon"><i class="fa fa-file"></i></span>
-    <span class="has-text-weight-semibold">Show Filters</span>
-  </a>
-`]
+const filterButton = ({ location, storage }) => {
+  const showFilters = location.query.show_filters || storage.get('show_filters')
+
+  return html()`
+    <button onclick="${toggleShowFilters}" class="button is-link is-outlined">
+      <span class="has-text-weight-semibold">${showFilters ? 'Hide Filters' : 'Show Filters'}</span>
+    </button>
+  `
+}
 
 const summaryTooltipButton = (id, short_id, summary) => [`
   <a href="${`/legislation/${short_id}`}" class="is-hidden-mobile">
@@ -758,14 +515,10 @@ const summaryTooltipButton = (id, short_id, summary) => [`
   </a>
 `]
 
-const noBillsMsg = (from_liquid, from_leg_body, recently_introduced, recent_update, committee_discharged, floor_consideration) => html()`
+const noBillsMsg = (from_leg_body) => html()`
 <div>
 ${from_leg_body === 'on' ? [`
   <p class="is-size-5">Liquid doesn't have this location's imported bill list yet, please change your selected criteria to view legislative items.
-
-  </p>
-`] : recent_update === 'on' || floor_consideration === 'on' || committee_discharged === 'on' ? [`
-  <p class="is-size-5">Liquid proposals do not have recent actions. Please change your selected criteria to view legislative items.
 
   </p>
 `] : [`

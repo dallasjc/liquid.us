@@ -213,13 +213,20 @@ const filterTabs = ({ geoip, legislatures, location, storage, user }, dispatch) 
 const measureListRow = (s) => {
   const next_action_at = s.next_agenda_action_at || s.next_agenda_begins_at
   const measureUrl = s.author_username ? `/${s.author_username}/legislation/${s.short_id}` : `/legislation/${s.short_id}`
+  const toAmend = s.title.includes('To amend ')
+  const billToAmend = s.title.includes('A bill to amend ')
+  const relatingTo = s.title.includes('Relating to: ')
+  const index = s.title.indexOf(' to ')
+  const reviseTitle = `${s.title.charAt(13).toUpperCase() + s.title.slice(14)}`
+  const reviseTitle2 = s.title.slice(index + 2)
+  const titleRevised = s.author_username && (toAmend || billToAmend) ? `T${reviseTitle2}` : relatingTo && s.author_username ? `${reviseTitle}` : `${s.title}`
 
   return `
     <div class="card highlight-hover">
       <div class="card-content">
-        <div class="columns">
-          <div class="column">
-            <h3><a href="${measureUrl}">${s.title}</a></h3>
+       <div class="columns">
+        <div class="column">
+            <h3><a href="${measureUrl}">${titleRevised}</a></h3>
             ${s.introduced_at ? [`
             <div class="is-size-7 has-text-grey">
               <span class="has-text-weight-bold">${s.short_id.replace(/^[^-]+-(\D+)(\d+)/, '$1 $2').toUpperCase()}</span> &mdash;

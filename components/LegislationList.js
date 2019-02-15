@@ -13,7 +13,6 @@ module.exports = {
     showFilters,
   }, initialize(measuresQuery, location, storage, user)],
   update: (event, state) => {
-    console.log('update()', event, state)
     switch (event.type) {
       case 'error':
         return [{ ...state, loading: false }]
@@ -40,70 +39,88 @@ module.exports = {
 
     return html()`
       <div class="section">
-        <div class="container is-widescreen">
-          <div>
-            ${filterButton(state, dispatch)}
-            <span class="is-right has-text-left-mobile">
-              ${proposeButton()}
-            </span>
+        <div class="columns">
+          <div class="column is-quarter">
+          ${filterButton(state, dispatch)}<br />
+          ${proposeButton()}
           </div>
-          <br>
-          ${filterTabs(state, dispatch)}
-          ${loading ? activityIndicator() :
-            (!measuresList.length ? noBillsMsg(query.order, query) : measuresList.map((short_id) => measureListRow(measures[short_id])))}
-          <style>
-            .highlight-hover:hover {
-              background: #f6f8fa;
-            }
-            .summary-tooltip {
-              position: relative;
-            }
-            .summary-tooltip .summary-tooltip-content {
-              display: none;
-              position: absolute;
-              max-height: 222px;
-            }
-            .summary-tooltip .summary-tooltip-arrow {
-              display: none;
-              position: absolute;
-            }
-            .summary-tooltip:hover .summary-tooltip-content {
-              display: block;
-              background: hsl(0, 0%, 100%) !important;
-              box-shadow: 0px 4px 15px hsla(0, 0%, 0%, 0.15);
-              border: 1px solid hsl(0, 0%, 87%);
-              color: #333;
-              font-size: 14px;
-              overflow: hidden;
-              padding: .4rem .8rem;
-              text-align: left;
-              white-space: normal;
-              width: 400px;
-              z-index: 99999;
-              top: auto;
-              bottom: 50%;
-              left: auto;
-              right: 100%;
-              transform: translate(-0.5rem, 50%);
-            }
-            .summary-tooltip:hover .summary-tooltip-arrow {
-              border-color: transparent transparent transparent hsl(0, 0%, 100%) !important;
-              z-index: 99999;
-              position: absolute;
-              display: inline-block;
-              pointer-events: none;
-              border-style: solid;
-              border-width: .5rem;
-              margin-left: -.5rem;
-              margin-top: -.5rem;
-              top: 50%;
-              left: -1px;
-            }
-            .summary-tooltip:hover .has-text-grey-lighter {
-              color: hsl(0, 0%, 75%) !important;
-            }
-          </style>
-        </div>
+          <div class="column">
+            <div class="container bill-details">
+              <br>
+              ${filterTabs(state, dispatch)}
+              ${loading ? activityIndicator() :
+                (!measuresList.length ? noBillsMsg(query.order, query) : measuresList.map((short_id) => measureListRow(measures[short_id])))}
+                </div>
+              <style>
+                .bill-details {
+                   max-width: 800px;
+                   margin-right: 30rem;
+                }
+                  @media (max-width: 800px) {
+                    .bill-details {
+                       max-width: 800px;
+                       margin-right: 0rem;
+                    }
+                  }
+                  .highlight-hover {
+                    background-color: #f6f8fa;
+
+                  }
+                  .highlight-hover:hover {
+                  background: #FFFFFF;
+
+                }
+                .summary-tooltip {
+                  position: relative;
+                }
+                .summary-tooltip .summary-tooltip-content {
+                  display: none;
+                  position: absolute;
+                  max-height: 222px;
+                }
+                .summary-tooltip .summary-tooltip-arrow {
+                  display: none;
+                  position: absolute;
+                }
+                .summary-tooltip:hover .summary-tooltip-content {
+                  display: block;
+                  background: hsl(0, 0%, 100%) !important;
+                  box-shadow: 0px 4px 15px hsla(0, 0%, 0%, 0.15);
+                  border: 1px solid hsl(0, 0%, 87%);
+                  color: #333;
+                  font-size: 14px;
+                  overflow: hidden;
+                  padding: .4rem .8rem;
+                  text-align: left;
+                  white-space: normal;
+                  width: 400px;
+                  z-index: 99999;
+                  top: auto;
+                  bottom: 50%;
+                  left: auto;
+                  right: 100%;
+                  transform: translate(-0.5rem, 50%);
+                }
+                .summary-tooltip:hover .summary-tooltip-arrow {
+                  border-color: transparent transparent transparent hsl(0, 0%, 100%) !important;
+                  z-index: 99999;
+                  position: absolute;
+                  display: inline-block;
+                  pointer-events: none;
+                  border-style: solid;
+                  border-width: .5rem;
+                  margin-left: -.5rem;
+                  margin-top: -.5rem;
+                  top: 50%;
+                  left: -1px;
+                }
+                .summary-tooltip:hover .has-text-grey-lighter {
+                  color: hsl(0, 0%, 75%) !important;
+                }
+              </style>
+            </div>
+          </div>
+
       </div>
     `
   },
@@ -298,46 +315,109 @@ const filterTabs = ({ geoip, legislatures, location, storage, user }, dispatch) 
 const measureListRow = (s) => {
   const next_action_at = s.next_agenda_action_at || s.next_agenda_begins_at
   const measureUrl = s.author_username ? `/${s.author_username}/legislation/${s.short_id}` : `/legislation/${s.short_id}`
-
+  const index = s.legislature_name.indexOf(', ')
+  const cityName = s.legislature_name.slice(0, index)
+  const liquidLeg = s.legislature_name === 'U.S. Congress' ? 'Congress' : s.legislature_name.includes(',') ? cityName : s.legislature_name
+  const legisInfo = s.sponsor_first_name && s.legislature_name === 'U.S. Congress' && s.chamber === 'Lower' ? 'U.S. House' : s.sponsor_first_name && s.legislature_name === 'U.S. Congress' ? 'U.S. Senate' : s.sponsor_first_name && s.chamber === 'Lower' ? `${s.legislature_name} Assembly` : s.sponsor_first_name ? `${s.legislature_name} Senate` : `Liquid ${liquidLeg}`
+  const anonymousName = s
+    ? `${s.legislature_name === 'U.S. Congress' ? `American` : (stateNames[s.legislature_name] || s.legislature_name)} Citizen`
+    : 'Anonymous'
+  const summaryWithoutRepeatedTitle = s.sponsor_first_name && s.summary ? s.summary.split(/<\/b> ?<\/p>|<\/strong><\/p>/)[1] : s.summary ? s.summary : ''
+  const summaryCheck = s.summary && summaryWithoutRepeatedTitle ? summaryWithoutRepeatedTitle : s.summary ? s.summary : ''
+  const summaryIndex = summaryCheck && summaryCheck.match(/(\n|^).*?(?=\n|\r|<\/p>|$)/) // summaryIndex and shortSummaryRegex are currently not being used
+  const shortSummaryRegex = s.summary && summaryIndex ? `${summaryCheck.slice(/^.*?(?=\n|\r|<\/p>|$)/)}<a href="${measureUrl}" . . (read more here)</a>` : s.summary ? summaryCheck : 'No summary available.'
+  const shortSummary = s.summary && summaryCheck.length > 300 ? `${summaryCheck.slice(0, 200)}<a href="${measureUrl}"> . . . (read more)</a>` : s.summary ? s.summary : 'A summary is in progress.'
+console.log(shortSummaryRegex[2])
+  const toAmend = s.title.includes('To amend ')
+  const billToAmend = s.title.includes('A bill to amend ')
+  const relatingTo = s.title.includes('Relating to: ')
+  const titleIndex = s.title.indexOf(' to ')
+  const reviseTitle = `${s.title.charAt(13).toUpperCase() + s.title.slice(14)}`
+  const reviseTitle2 = s.title.slice(titleIndex + 2)
+  const titleRevised = s.author_username && (toAmend || billToAmend) ? `T${reviseTitle2}` : relatingTo && s.author_username ? `${reviseTitle}` : `${s.title}`
+  console.log()
   return `
     <div class="card highlight-hover">
       <div class="card-content">
-       <div class="columns">
-        <div class="column">
-            <h3><a href="${measureUrl}">${s.title}</a></h3>
-            ${s.introduced_at ? [`
-            <div class="is-size-7 has-text-grey">
-              ${s.sponsor_first_name && s.legislature_name
-                ? [`Introduced in the ${s.legislature_name} by&nbsp;<a href=${`/${s.sponsor_username}`}>${s.chamber === 'Upper' ? 'Senator ' : `Rep. `}${s.sponsor_first_name} ${s.sponsor_last_name}</a>&nbsp;on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
-                : s.legislature_name
-                ? [`Introduced in the ${s.legislature_name} legislature on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
-                : [`Introduced on ${(new Date(s.introduced_at)).toLocaleDateString()}`]
-              }
-
-              ${s.summary ? [`
-                <p class="is-hidden-tablet"><strong class="has-text-grey">Has summary</strong></p>
-              `] : []}
-              <p><strong class="has-text-grey">Status:</strong>
-              ${next_action_at ? [`
-                Scheduled for House floor action ${!s.next_agenda_action_at ? 'during the week of' : 'on'} ${new Date(next_action_at).toLocaleDateString()}
-                <br />
-              `] : `${s.status}</p>`}
-              <strong class="has-text-grey">Last action:</strong> ${new Date(s.last_action_at).toLocaleDateString()}
+        <div class="title is-5"><a href="${measureUrl}">${titleRevised}</a></div>
+          <div class="is-size-6 has-text-grey">
+            <div class="card summary-text${summaryAvailableCheck(s)}"
+              <span is-centered>${shortSummary}</span><br /><br />
             </div>
+            <div class="columns is-one-half">
+              <div class="column">
+                ${s.introduced_at ? [`
+                <br /><strong class=" has-text-grey">Status:</strong>
+                ${next_action_at ? [`
+                  Scheduled for House floor action ${!s.next_agenda_action_at ? 'during the week of' : 'on'} ${new Date(next_action_at).toLocaleDateString()}
+                  <br />
+                `] : `${s.status}`} <br />
+                  <strong class="has-text-grey">Last action: </strong>
+                  <span>${new Date(s.last_action_at).toLocaleDateString()}</span>
+              <br />
+              <span class="is-size-7 has-text-grey-light">
+                ${s.sponsor_first_name && s.legislature_name ? [`
+                  ${legisInfo}
+                  <span class="has-text-grey-lighter">&bullet;</span>
+                  <a href="${`/${s.author_username}`}">${s.sponsor_first_name} ${s.sponsor_last_name}</a>&nbsp;
+                  <span class="has-text-grey-lighter">&bullet;</span>
+                  ${(new Date(s.introduced_at)).toLocaleDateString()}`]
+                    : s.legislature_name
+                    ? [`${legisInfo}
+                    <span class="has-text-grey-lighter">&bullet;</span>
+                    ${(new Date(s.introduced_at)).toLocaleDateString()}`]
+                    : [`${(new Date(s.introduced_at)).toLocaleDateString()}`]
+                  }
+                  </span>
+              </div>
           `] : [`
-            <div class="is-size-7 has-text-grey">
+            <div class="is-size-7 has-text-grey-light">
               ${s.author_username & s.legislature_name
-                ? `Authored for ${s.legislature_name} by <a href="${`/${s.author_username}`}">${s.author_first_name} ${s.author_last_name}</a>`
-                : `Authored for ${s.legislature_name} by Anonymous`}
-              on ${(new Date(s.created_at)).toLocaleDateString()}
+                ? [`${legisInfo}
+                <span class="has-text-grey-lighter">&bullet;</span>
+                <a href="${`/${s.author_username}`}">${s.author_first_name} ${s.author_last_name}</a>&nbsp;
+                <span class="has-text-grey-lighter">&bullet;</span>
+                ${(new Date(s.introduced_at)).toLocaleDateString()}`]
+                : `${legisInfo}
+                <span class="has-text-grey-lighter">&bullet;</span>
+                ${anonymousName}`}
+                <span class="has-text-grey-lighter">&bullet;</span>
+                ${(new Date(s.created_at)).toLocaleDateString()}
             </div>
             `]}
-          </div>
-          <div class="column is-one-quarter has-text-right-tablet has-text-left-mobile">
-            ${voteButton(s)}
-            ${s.summary ? summaryTooltipButton(s.id, s.short_id, s.summary) : ''}
-          </div>
+            <div class="column is-quarter-right"
+              <div class="align-right has-text-right vote-button">
+              <br />${voteButton(s)}
+              </div>
+            </div>
+
         </div>
+        <style>
+        .summary-text {
+          margin-left: 5rem;
+          margin-top: -.5rem;
+          padding-left: 1rem;
+          padding-top: 1rem;
+          padding-bottom: 0rem;
+          padding-right: 20rem
+          margin-bottom: 0rem;
+          margin-right: 5rem;
+        }
+        @media (max-width: 800px) {
+          .summary-text {
+
+          margin-left: 1rem;
+          margin-top: -.5rem;
+          padding-left: 1rem;
+          padding-top: 1rem;
+          padding-bottom: 1rem;
+          padding-right: 1rem
+          margin-bottom: 1rem;
+          margin-right: 1rem;
+          }
+        }
+        </style>
+
       </div>
     </div>
   `
@@ -432,7 +512,6 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
 
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
   const api_url = `/measures_detailed?select=${fields.join(',')}${from_liquid_query}${from_leg_body_query}${status_query}${type_query}${updated_query}${introduced_query}${legCheck}${fts}&published=is.true&order=${lastAction}.desc.nullslast&limit=40`
-  console.log(api_url)
 
 
   return api(api_url, { storage }).then((measures) => dispatch({
@@ -455,7 +534,7 @@ const votePositionClass = (position) => {
 
 const voteButton = (s) => {
   let voteBtnTxt = 'Vote'
-  let voteBtnClass = 'button is-small is-outlined is-primary'
+  let voteBtnClass = 'button is-outlined is-medium is-primary'
   let voteBtnIcon = 'fas fa-edit'
   if (s.vote_position) {
     const position = `${s.vote_position[0].toUpperCase()}${s.vote_position.slice(1)}`
@@ -468,15 +547,15 @@ const voteButton = (s) => {
       } else {
         voteBtnTxt = `Inherited ${position} vote from proxy`
       }
-      voteBtnClass = `button is-small is-outlined ${votePositionClass(s.vote_position)}`
+      voteBtnClass = `button is-normal is-outlined ${votePositionClass(s.vote_position)}`
     }
     if (s.delegate_rank === -1) {
       voteBtnTxt = `You voted ${position}`
-      voteBtnClass = `button is-small ${votePositionClass(s.vote_position)}`
+      voteBtnClass = `button is-medium is-success ${votePositionClass(s.vote_position)}`
     }
   }
-  return [`<a style="white-space: inherit; height: auto;" class="${voteBtnClass}" href="${`/legislation/${s.short_id}`}">
-    <span class="icon" style="align-self: flex-start;"><i class="${voteBtnIcon}"></i></span>
+  return [`<a style="white-space: inherit; height: auto" class="${voteBtnClass}" href="${`/legislation/${s.short_id}`}">
+    <br /><span class="icon" style="align-right: flex-start;"><i class="${voteBtnIcon}"></i></span>
     <span class="has-text-weight-semibold">${voteBtnTxt}</span>
   </a>`]
 }
@@ -498,22 +577,12 @@ const filterButton = ({ location, storage }) => {
 
   return html()`
     <button onclick="${toggleShowFilters}" class="button is-link is-outlined">
+    <span class="icon"><i class="fa fa-filter"></i></span>
+
       <span class="has-text-weight-semibold">${showFilters ? 'Hide Filters' : 'Show Filters'}</span>
     </button>
   `
 }
-
-const summaryTooltipButton = (id, short_id, summary) => [`
-  <a href="${`/legislation/${short_id}`}" class="is-hidden-mobile">
-    <br />
-    <br />
-    <span class="icon summary-tooltip">
-      <i class="fa fa-lg fa-info-circle has-text-grey-lighter"></i>
-      <div class="summary-tooltip-content">${summary}</div>
-      <div class="summary-tooltip-arrow"></div>
-    </span>
-  </a>
-`]
 
 const noBillsMsg = (from_leg_body) => html()`
 <div>
@@ -529,3 +598,10 @@ ${from_leg_body === 'on' ? [`
 `]}
 </div>
 `
+const summaryAvailableCheck = (s) => {
+let text = ''
+  if (s.legislature_name.length === 2 || (s.legislature_name === 'U.S. Congress' && s.type === 'nomination')) {
+    text = ' is-hidden'
+  }
+  return text
+}

@@ -38,17 +38,15 @@ module.exports = {
     const { query } = location
 
     return html()`
-      <div class="section">
+      <div class="section whole-page">
         <div class="columns">
-          <div class="column is-quarter">
-          ${filterButton(state, dispatch)}<br />
-          ${proposeButton()}
-          </div>
           <div class="column">
             <div class="container bill-details">
-              <br>
-              ${filterTabs(state, dispatch)}
-              ${loading ? activityIndicator() :
+              <div class="both-buttons">
+                ${filterButton(state, dispatch)}&nbsp${proposeButton()}
+              </div>
+            ${filterTabs(state, dispatch)}
+            ${loading ? activityIndicator() :
                 (!measuresList.length ? noBillsMsg(query.order, query) : measuresList.map((short_id) => measureListRow(measures[short_id])))}
                 </div>
               <style>
@@ -62,12 +60,19 @@ module.exports = {
                        margin-right: 0rem;
                     }
                   }
-                  .highlight-hover {
+                  .both-buttons {
+                    margin-left: 15rem;
+                  }
+                  .whole-page {
                     background-color: #f6f8fa;
 
                   }
+                  .highlight-hover {
+                    background-color: #FFFFF;
+
+                  }
                   .highlight-hover:hover {
-                  background: #FFFFFF;
+                  background: #f6f8fa;
 
                 }
                 .summary-tooltip {
@@ -322,56 +327,47 @@ const measureListRow = (s) => {
   const anonymousName = s
     ? `${s.legislature_name === 'U.S. Congress' ? `American` : (stateNames[s.legislature_name] || s.legislature_name)} Citizen`
     : 'Anonymous'
-  const summaryWithoutRepeatedTitle = s.sponsor_first_name && s.summary ? s.summary.split(/<\/b> ?<\/p>|<\/strong><\/p>/)[1] : s.summary ? s.summary : ''
-  const summaryCheck = s.summary && summaryWithoutRepeatedTitle ? summaryWithoutRepeatedTitle : s.summary ? s.summary : ''
-  const summaryIndex = summaryCheck && summaryCheck.match(/(\n|^).*?(?=\n|\r|<\/p>|$)/) // summaryIndex and shortSummaryRegex are currently not being used
-  const shortSummaryRegex = s.summary && summaryIndex ? `${summaryCheck.slice(/^.*?(?=\n|\r|<\/p>|$)/)}<a href="${measureUrl}" . . (read more here)</a>` : s.summary ? summaryCheck : 'No summary available.'
-  const shortSummary = s.summary && summaryCheck.length > 300 ? `${summaryCheck.slice(0, 200)}<a href="${measureUrl}"> . . . (read more)</a>` : s.summary ? s.summary : 'A summary is in progress.'
-console.log(shortSummaryRegex[2])
   const toAmend = s.title.includes('To amend ')
   const billToAmend = s.title.includes('A bill to amend ')
   const relatingTo = s.title.includes('Relating to: ')
   const titleIndex = s.title.indexOf(' to ')
   const reviseTitle = `${s.title.charAt(13).toUpperCase() + s.title.slice(14)}`
   const reviseTitle2 = s.title.slice(titleIndex + 2)
-  const titleRevised = s.author_username && (toAmend || billToAmend) ? `T${reviseTitle2}` : relatingTo && s.author_username ? `${reviseTitle}` : `${s.title}`
-  console.log()
+  const titleRevised = (toAmend || billToAmend) ? `T${reviseTitle2}` : relatingTo ? `${reviseTitle}` : `${s.title}`
   return `
     <div class="card highlight-hover">
       <div class="card-content">
         <div class="title is-5"><a href="${measureUrl}">${titleRevised}</a></div>
-          <div class="is-size-6 has-text-grey">
-            <div class="card summary-text${summaryAvailableCheck(s)}"
-              <span is-centered>${shortSummary}</span><br /><br />
+        <div class="columns">
+          <div class="column">
+            <div class="is-size-6 has-text-grey">
+              ${s.introduced_at ? [`
+              <strong class=" has-text-grey">Status:</strong>
+              ${next_action_at ? [`
+                Scheduled for House floor action ${!s.next_agenda_action_at ? 'during the week of' : 'on'} ${new Date(next_action_at).toLocaleDateString()}
+                <br />
+              `] : `${s.status}`} <br />
+                <strong class="has-text-grey">Last action: </strong>
+                <span>${new Date(s.last_action_at).toLocaleDateString()}</span>
+            <br />
+              <span class="has-text-grey">
+              ${s.sponsor_first_name && s.legislature_name ? [`
+                ${legisInfo}
+                <span class="has-text-grey-lighter">&bullet;</span>
+                <a href="${`/${s.author_username}`}">${s.sponsor_first_name} ${s.sponsor_last_name}</a>&nbsp;
+                <span class="has-text-grey-lighter">&bullet;</span>
+                Introduced ${(new Date(s.introduced_at)).toLocaleDateString()}`]
+                  : s.legislature_name
+                  ? [`${legisInfo}
+                  <span class="has-text-grey-lighter">&bullet;</span>
+                  Introduced ${(new Date(s.introduced_at)).toLocaleDateString()}`]
+                  : [`Introduced ${(new Date(s.introduced_at)).toLocaleDateString()}`]
+                }
+                </span>
             </div>
-            <div class="columns is-one-half">
-              <div class="column">
-                ${s.introduced_at ? [`
-                <br /><strong class=" has-text-grey">Status:</strong>
-                ${next_action_at ? [`
-                  Scheduled for House floor action ${!s.next_agenda_action_at ? 'during the week of' : 'on'} ${new Date(next_action_at).toLocaleDateString()}
-                  <br />
-                `] : `${s.status}`} <br />
-                  <strong class="has-text-grey">Last action: </strong>
-                  <span>${new Date(s.last_action_at).toLocaleDateString()}</span>
-              <br />
-              <span class="is-size-7 has-text-grey-light">
-                ${s.sponsor_first_name && s.legislature_name ? [`
-                  ${legisInfo}
-                  <span class="has-text-grey-lighter">&bullet;</span>
-                  <a href="${`/${s.author_username}`}">${s.sponsor_first_name} ${s.sponsor_last_name}</a>&nbsp;
-                  <span class="has-text-grey-lighter">&bullet;</span>
-                  ${(new Date(s.introduced_at)).toLocaleDateString()}`]
-                    : s.legislature_name
-                    ? [`${legisInfo}
-                    <span class="has-text-grey-lighter">&bullet;</span>
-                    ${(new Date(s.introduced_at)).toLocaleDateString()}`]
-                    : [`${(new Date(s.introduced_at)).toLocaleDateString()}`]
-                  }
-                  </span>
-              </div>
+          </div>
           `] : [`
-            <div class="is-size-7 has-text-grey-light">
+            <div class="is-size-6 has-text-grey-light">
               ${s.author_username & s.legislature_name
                 ? [`${legisInfo}
                 <span class="has-text-grey-lighter">&bullet;</span>
@@ -384,12 +380,12 @@ console.log(shortSummaryRegex[2])
                 <span class="has-text-grey-lighter">&bullet;</span>
                 ${(new Date(s.created_at)).toLocaleDateString()}
             </div>
-            `]}
-            <div class="column is-quarter-right"
-              <div class="align-right has-text-right vote-button">
-              <br />${voteButton(s)}
-              </div>
-            </div>
+          </div>
+          `]}
+          <div class="colum is-one-quarter has-text-right-tablet has-text-left-mobile">
+            ${voteButton(s)}
+            ${s.summary ? summaryTooltipButton(s.id, s.short_id, s.summary) : ''}
+          </div>
 
         </div>
         <style>
@@ -472,8 +468,8 @@ const initialize = (prevQuery, location, storage, user) => (dispatch) => {
   const ri = recently_introduced === 'on'
   const introducedCheck = ri && (flc || cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? `Introduced,Pending Committee,` : ri ? `Introduced,Pending Committee` : ''
   const floorCheck = flc && (cd || ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? 'Floor Consideration,Pending Executive Calendar,' : flc ? 'Floor Consideration,Pending Executive Calendar' : ''
-  const dischargedCheck = cd && (ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? ',' : cd ? '' : ''
-  const committeeActionCheck = ca && (poc || fw || pbc || rc || tec || ecc || vc || ec) ? 'Committee Consideration,' : fw ? 'Committee Consideration' : ''
+  const dischargedCheck = cd && (ca || poc || fw || pbc || rc || tec || ecc || vc || ec) ? 'Awaiting floor or committee vote,' : cd ? 'Awaiting floor or committee vote' : ''
+  const committeeActionCheck = ca && (poc || fw || pbc || rc || tec || ecc || vc || ec) ? 'Committee Consideration,' : ca ? 'Committee Consideration' : ''
   const passedOneCheck = poc && (fw || pbc || rc || tec || ecc || vc || ec) ? 'Passed One Chamber,' : poc ? 'Passed One Chamber' : ''
   const failedOne = fw && (pbc || rc || tec || ecc || vc || ec) ? 'Failed One Chamber,Withdrawn,Failed or Returned to Executive,' : fw ? 'Failed One Chamber,Withdrawn,Failed or Returned to Executive' : ''
   const passedBoth = pbc && (rc || tec || ecc || vc || ec) ? 'Passed Both Chambers,' : pbc ? 'Passed Both Chambers' : ''
@@ -547,7 +543,7 @@ const voteButton = (s) => {
       } else {
         voteBtnTxt = `Inherited ${position} vote from proxy`
       }
-      voteBtnClass = `button is-normal is-outlined ${votePositionClass(s.vote_position)}`
+      voteBtnClass = `button is-small is-outlined ${votePositionClass(s.vote_position)}`
     }
     if (s.delegate_rank === -1) {
       voteBtnTxt = `You voted ${position}`
@@ -555,7 +551,7 @@ const voteButton = (s) => {
     }
   }
   return [`<a style="white-space: inherit; height: auto" class="${voteBtnClass}" href="${`/legislation/${s.short_id}`}">
-    <br /><span class="icon" style="align-right: flex-start;"><i class="${voteBtnIcon}"></i></span>
+    <span class="icon" style="align-right: flex-start;"><i class="${voteBtnIcon}"></i></span>
     <span class="has-text-weight-semibold">${voteBtnTxt}</span>
   </a>`]
 }
@@ -584,6 +580,18 @@ const filterButton = ({ location, storage }) => {
   `
 }
 
+const summaryTooltipButton = (id, short_id, summary) => [`
+  <a href="${`/legislation/${short_id}`}" class="is-hidden-mobile">
+    <br />
+    <br />
+    <span class="icon summary-tooltip">
+      <i class="fa fa-lg fa-info-circle has-text-grey-lighter"></i>
+      <div class="summary-tooltip-content">${summary}</div>
+      <div class="summary-tooltip-arrow"></div>
+    </span>
+  </a>
+`]
+
 const noBillsMsg = (from_leg_body) => html()`
 <div>
 ${from_leg_body === 'on' ? [`
@@ -598,10 +606,3 @@ ${from_leg_body === 'on' ? [`
 `]}
 </div>
 `
-const summaryAvailableCheck = (s) => {
-let text = ''
-  if (s.legislature_name.length === 2 || (s.legislature_name === 'U.S. Congress' && s.type === 'nomination')) {
-    text = ' is-hidden'
-  }
-  return text
-}

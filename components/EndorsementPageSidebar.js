@@ -1,5 +1,6 @@
 const { WWW_URL } = process.env
 const { signIn, updateNameAndAddress } = require('../effects')
+const { makePoint } = require('../helpers')
 const Component = require('./Component')
 const GoogleAddressAutocompleteScript = require('./EndorsementGoogleAddressAutocompleteScript')
 
@@ -85,23 +86,22 @@ module.exports.NewSignupEndorseForm = class NewSignupEndorseForm extends Compone
       const vote_id = comment.id
 
       if (user) {
-        // Store endorsement
-        return this.api('/rpc/endorse', {
-          method: 'POST',
-          body: JSON.stringify({ user_id: user.id, vote_id, measure_id: measure.id, public: formData.is_public === 'on' }),
-        })
-
-        .then(() => updateNameAndAddress({
+        return updateNameAndAddress({
           addressData: {
             user_id: user.id,
             address: formData.address.address,
             city: formData.address.city,
             state: formData.address.state,
-            geocoords: `POINT(${formData.address.lon} ${formData.address.lat})`,
+            geocoords: makePoint(formData.address.lon, formData.address.lat),
           },
           nameData: { first_name, last_name },
           storage: this.storage,
-        })(this.state.dispatch))
+        })(this.state.dispatch)
+        // Store endorsement
+        .then(() => this.api('/rpc/endorse', {
+          method: 'POST',
+          body: JSON.stringify({ user_id: user.id, vote_id, measure_id: measure.id, public: formData.is_public === 'on' }),
+        }))
         // Get new endorsement count
         .then(() => this.api(`/votes_detailed?id=eq.${vote_id}`))
         .then((votes) => {

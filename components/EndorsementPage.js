@@ -403,7 +403,7 @@ class EndorsementComment extends Component {
               ? `<a href="/${author_username}">${author_name}</a>`
               : (author_name || 'Anonymous')]}
           </p>
-          <p>${content}</p>
+          <p>${[this.linkifyUrls(content)]}</p>
         </div>
       </div>
     `

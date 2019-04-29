@@ -190,7 +190,7 @@ const measureListRow = (s, url) => {
         <div class="columns">
           <div class="column">
             <h3><a href="${measureUrl}">${s.title}</a></h3>
-            <div class="${s.policy_area ? 'is-size-7 has-text-grey' : 'is-hidden'}">
+            <div class="${!s.policy_area || url.includes('policy_area') ? 'is-hidden' : 'is-size-7 has-text-grey'}">
               <b>Policy area:</b> <a href="${subjectUrl(url, s.policy_area)}">${s.policy_area}</a>
             </div>
             ${s.introduced_at ? html`

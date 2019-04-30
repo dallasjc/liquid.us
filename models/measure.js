@@ -21,12 +21,13 @@ module.exports = (event, state) => {
         case '/legislation/:shortId':
         case '/nominations/:shortId':
         case '/:username/legislation/:shortId':
+
           return [{
             ...state,
             loading: { ...state.loading, page: true },
             location: {
               ...state.location,
-              description: `Discuss with your fellow voters & be heard by your elected officials.`,
+              description: 'Discuss with your fellow voters & be heard by your elected officials.',
             },
             measures: {
               ...state.measures,
@@ -122,6 +123,7 @@ module.exports = (event, state) => {
           ...state.location,
           title: isMeasureDetailPage(state.location.route) ? `${event.measure.legislature_name}: ${event.measure.title}` : state.location.title,
           ogImage: isMeasureDetailPage(state.location.route) && measureOgImage(event.measure),
+          description: event.measure.author_first_name && event.measure.summary ? event.measure.summary.split('\n')[0] : state.location.description
         },
         measures: {
           ...state.measures,

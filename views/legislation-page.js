@@ -122,20 +122,24 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
   const enacted = location.query.enacted || cookies.enacted
   const veto = location.query.veto || cookies.veto
   const summary_available = location.summary_available || cookies.summary_available
+  const congress = location.query.congress || cookies.congress
+  const state = location.query.state || cookies.state
+  const city = location.query.city || cookies.city
+  const liquid_introduced = location.query.liquid_introduced || cookies.liquid_introduced
+  const imported = location.query.imported || cookies.imported
 
   return html`
     <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
       <input name="policy_area" type="hidden" value="${location.query.policy_area}" />
-      <input name="state" type="hidden" value="${location.query.state}" />
-      <input name="congress" type="hidden" value="${location.query.congress}" />
-      <input name="city" type="hidden" value="${location.query.city}" />
-      <input name="liquid_introduced" type="hidden" value="${location.query.liquid_introduced}" />
-      <input name="imported" type="hidden" value="${location.query.imported}" />
 
       <div class="field is-grouped is-grouped-center">
         <div class="control">
           <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'show_filters', 'on')} name="show_filters" checked=${!!showFilters} class="is-hidden" />
           <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'imported', 'on')} name="imported" checked=${!!imported} class="is-hidden" />
+          <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'liquid_introduced', 'on')} name="liquid_introduced" checked=${!!liquid_introduced} class="is-hidden" />
+          <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'city', 'on')} name="city" checked=${!!city} class="is-hidden" />
+          <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'congress', 'on')} name="congress" checked=${!!congress} class="is-hidden" />
+          <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'state', 'on')} name="state" checked=${!!state} class="is-hidden" />
           <div id="filter_checkboxes">
             <div class="columns has-text-left">
               <div class="column is-narrow">

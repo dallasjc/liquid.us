@@ -142,7 +142,7 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
           <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'state', 'on')} name="state" checked=${!!state} class="is-hidden" />
           <div id="filter_checkboxes">
             <div class="columns has-text-left">
-              <div class="column is-narrow">
+              <div class="column is-narrow" style="padding-right: 4rem;">
                 <h3>Type</h3>
                 <label class="checkbox has-text-grey">
                   <input onclick=${toggleFilter(cookies, dispatch, 'bills', 'on')} type="checkbox" name="bills" checked=${!!bills} />
@@ -166,7 +166,7 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
                 </label>
               </div>
 
-              <div class="column is-narrow">
+              <div class="column is-narrow" style="padding-right: 4rem;">
                 <h3>Legislative Action</h3>
                 <label class="checkbox has-text-grey">
                   <input onclick=${toggleFilter(cookies, dispatch, 'recently_introduced', 'on')} type="checkbox" name="recently_introduced" checked=${!!recently_introduced} />
@@ -199,7 +199,7 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
                 </label>
               </div>
 
-              <div class="column is-narrow">
+              <div class="column is-narrow" style="padding-right: 4rem;">
                 <h3>Executive Action</h3>
                 <label class="checkbox has-text-grey">
                   <input onclick=${toggleFilter(cookies, dispatch, 'to_exec', 'on')} type="checkbox" name="to_exec" checked=${!!to_exec} />
@@ -516,7 +516,7 @@ const filterImages = ({ location, cookies, geoip, user }) => {
           </div>
          `
         }
-        <div class ="column">
+        <div class ="column" style="padding-top: 2rem">
           ${filterButton(location, cookies)}
         </div>
       </div>
@@ -527,10 +527,10 @@ const filterImages = ({ location, cookies, geoip, user }) => {
   const filterButton = (location, cookies) => {
     const showFilters = location.query.show_filters === 'on' || cookies.show_filters === 'on'
     return html`
-      <button onclick="${toggleShowFilters}" class="button is-link is-outlined">
-      <span class="icon"><i class="fa fa-filter"></i></span>
-      <span class="has-text-weight-semibold">${showFilters ? 'Hide Filters' : 'More Filters'}</span>
-    </button>
+      <button onclick="${toggleShowFilters}" class="button is-primary is-outlined">
+        <span class="icon"><i class="fa fa-filter"></i></span>
+        <span class="has-text-weight-semibold">${showFilters ? 'Hide Filters' : 'More Filters'}</span>
+      </button>
   `
   }
   const toggleShowFilters = () => {

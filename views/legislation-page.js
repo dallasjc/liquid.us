@@ -9,7 +9,9 @@ module.exports = (state, dispatch) => {
     <div class="section">
       <div class="container is-widescreen">
         ${filterImages({ cookies, location, geoip, user })}
-        ${filterForm(geoip, legislatures, cookies, location, user, dispatch)}
+        <div class="has-text-centered">
+          ${filterForm(geoip, legislatures, cookies, location, user, dispatch)}
+        </div>
         ${query.policy_area ? subjectCheckbox(location.query.policy_area) : ''}
         ${(!user || !user.address) && geoip ? [addAddressNotification(geoip, user)] : []}
         ${loading.measures || !measuresByUrl[url] ? activityIndicator() :
@@ -132,7 +134,7 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
         <div class="control">
           <div id="filter_checkboxes">
             <div class="columns has-text-left">
-              <div class="column type">
+              <div class="column is-narrow">
                 <h3>Type</h3>
                 <label class="checkbox has-text-grey">
                   <input onclick=${toggleFilter(cookies, dispatch, 'bills', 'on')} type="checkbox" name="bills" checked=${!!bills} />
@@ -156,7 +158,7 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
                 </label>
               </div>
 
-              <div class="column" style="width: 230px">
+              <div class="column is-narrow">
                 <h3>Legislative Action</h3>
                 <label class="checkbox has-text-grey">
                   <input onclick=${toggleFilter(cookies, dispatch, 'recently_introduced', 'on')} type="checkbox" name="recently_introduced" checked=${!!recently_introduced} />
@@ -189,7 +191,7 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
                 </label>
               </div>
 
-              <div class="column exec-action">
+              <div class="column is-narrow">
                 <h3>Executive Action</h3>
                 <label class="checkbox has-text-grey">
                   <input onclick=${toggleFilter(cookies, dispatch, 'to_exec', 'on')} type="checkbox" name="to_exec" checked=${!!to_exec} />

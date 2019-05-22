@@ -4,13 +4,14 @@ const activityIndicator = require('./activity-indicator')
 module.exports = (state, dispatch) => {
   const { cookies, geoip, legislatures, loading, measures, measuresByUrl, location, user } = state
   const { query, url } = location
+  const showFilters = location.query.show_filters || cookies.show_filters
 
   return html`
     <div class="section">
       <div class="container is-widescreen">
         ${filterImages({ cookies, location, geoip, user })}
-        <div class="has-text-centered">
-          ${filterForm(geoip, legislatures, cookies, location, user, dispatch)}
+        <div class="${showFilters === 'on' ? 'has-text-centered' : 'is-hidden'}">
+          ${filterForm(geoip, legislatures, cookies, location, user, dispatch)}<br /><br />
         </div>
         ${query.policy_area ? subjectCheckbox(location.query.policy_area) : ''}
         ${(!user || !user.address) && geoip ? [addAddressNotification(geoip, user)] : []}
@@ -105,6 +106,7 @@ const updateFilter = (event, location, dispatch, userState, state, userCity, cit
 }
 
 const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
+  const showFilters = location.query.show_filters || cookies.show_filters
   const hide_direct_votes = location.query.hide_direct_votes || cookies.hide_direct_votes
   const bills = location.query.bills || cookies.bills
   const nominations = location.query.nominations || cookies.nominations
@@ -132,6 +134,8 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
 
       <div class="field is-grouped is-grouped-center">
         <div class="control">
+          <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'show_filters', 'on')} name="show_filters" checked=${!!showFilters} class="is-hidden" />
+          <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'imported', 'on')} name="imported" checked=${!!imported} class="is-hidden" />
           <div id="filter_checkboxes">
             <div class="columns has-text-left">
               <div class="column is-narrow">
@@ -504,10 +508,27 @@ const filterImages = ({ location, cookies, geoip, user }) => {
               </span>
               <br />Liquid
             </span>
-          </a>
-       </div>
-       `
-      }
-    </div>
+            </a>
+          </div>
+         `
+        }
+        <div class ="column">
+          ${filterButton(location, cookies)}
+        </div>
+      </div>
+    `
+    }
+  // determine whether to show filters
+
+  const filterButton = (location, cookies) => {
+    const showFilters = location.query.show_filters === 'on' || cookies.show_filters === 'on'
+    return html`
+      <button onclick="${toggleShowFilters}" class="button is-link is-outlined">
+      <span class="icon"><i class="fa fa-filter"></i></span>
+      <span class="has-text-weight-semibold">${showFilters ? 'Hide Filters' : 'More Filters'}</span>
+    </button>
   `
+  }
+  const toggleShowFilters = () => {
+    document.querySelector('[name="show_filters"]').click()
   }

@@ -13,7 +13,7 @@ module.exports = (state, dispatch) => {
   const title = l.type === 'nomination' ? `Do you support ${l.title.replace(/\.$/, '')}?` : l.title
   const hideTargetReps = (l) => (
     l.author_username === 'councilmemberbas'
-    || l.short_id === 'stop-227M-jail'
+    || l.short_id === 'press-pause-on-227m-new-jail'
   )
 
   return html`
@@ -22,7 +22,7 @@ module.exports = (state, dispatch) => {
         <div class="columns">
           <div class="column">
             <h2 class="title has-text-weight-semibold is-2 has-text-centered has-text-dark">${title}</h2>
-            ${hideTargetReps ? '' : targetReps({ measure, vote, ...state }, dispatch)}
+            ${hideTargetReps(l) ? '' : targetReps({ measure, vote, ...state }, dispatch)}
             <div class="small-screens-only">
               ${endorsementCount(vote, 'small-screen')}
             </div>

@@ -8,7 +8,7 @@ module.exports = (state, dispatch) => {
 
   return html`
     <div class="section">
-      <div class="container is-widescreen">
+      <div class="container is-widescreen is-mobile">
         ${filterImages({ cookies, location, geoip, user })}
         <div class="${showFilters === 'on' ? 'has-text-centered' : 'is-hidden'}">
           ${filterForm(geoip, legislatures, cookies, location, user, dispatch)}<br /><br />
@@ -107,7 +107,7 @@ const updateFilter = (event, location, dispatch, userState, state, userCity, cit
 
 const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
   const showFilters = location.query.show_filters || cookies.show_filters
-  const hide_direct_votes = location.query.hide_direct_votes || cookies.hide_direct_votes
+  const directly_voted = location.query.directly_voted || cookies.directly_voted
   const bills = location.query.bills || cookies.bills
   const nominations = location.query.nominations || cookies.nominations
   const resolutions = location.query.resolutions || cookies.resolutions
@@ -127,6 +127,10 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
   const city = location.query.city || cookies.city
   const liquid_introduced = location.query.liquid_introduced || cookies.liquid_introduced
   const imported = location.query.imported || cookies.imported
+  const user_introduced = location.query.user_introduced || cookies.user_introduced
+  const proxy_voted = location.query.proxy_voted || cookies.proxy_voted
+  const not_voted = location.query.not_voted || cookies.not_voted
+  const amendments = location.query.amendments || cookies.amendments
 
   return html`
     <form name="legislation_filters" class="is-inline-block" method="GET" action="/legislation" onsubmit="${(e) => updateFilter(e, location, dispatch)}">
@@ -142,6 +146,31 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
           <input type="checkbox" onclick=${toggleFilter(cookies, dispatch, 'state', 'on')} name="state" checked=${!!state} class="is-hidden" />
           <div id="filter_checkboxes">
             <div class="columns has-text-left">
+              <div class="column is-narrow" style="padding-right: 4rem;"><br /><br />
+                <label class="checkbox has-text-grey">
+                  <input onclick=${toggleFilter(cookies, dispatch, 'summary_available', 'on')} type="checkbox" name="summary_available" checked=${!!summary_available} />
+                  Summary available
+                </label><br />
+              </div>
+              <div class="${user ? 'column is-narrow' : 'is-hidden'}" style="padding-right: 4rem;">
+                <h3>Liquid Action</h3>
+                <label class="${`checkbox has-text-grey control ${user ? '' : 'is-hidden'}`}">
+                  <input onclick=${toggleFilter(cookies, dispatch, 'user_introduced', 'on')} type="checkbox" name="user_introduced" checked=${!!user_introduced}>
+                  You Introduced
+                </label><br />
+                <label class="${`checkbox has-text-grey control ${user ? '' : 'is-hidden'}`}">
+                  <input onclick=${toggleFilter(cookies, dispatch, 'directly_voted', 'on')} type="checkbox" name="directly_voted" checked=${!!directly_voted}>
+                  You Voted
+                </label><br />
+                <label class="${`checkbox has-text-grey control ${user ? '' : 'is-hidden'}`}">
+                  <input onclick=${toggleFilter(cookies, dispatch, 'proxy_voted', 'on')} type="checkbox" name="proxy_voted" checked=${!!proxy_voted}>
+                  Proxy Voted
+                </label><br />
+                <label class="${`checkbox has-text-grey control ${user ? '' : 'is-hidden'}`}">
+                  <input onclick=${toggleFilter(cookies, dispatch, 'not_voted', 'on')} type="checkbox" name="not_voted" checked=${!!not_voted}>
+                  Not Voted
+                </label>
+              </div>
               <div class="column is-narrow" style="padding-right: 4rem;">
                 <h3>Type</h3>
                 <label class="checkbox has-text-grey">
@@ -153,16 +182,12 @@ const filterForm = (geoip, legislatures, cookies, location, user, dispatch) => {
                   Nominations
                 </label><br />
                 <label class="checkbox has-text-grey">
-                  <input onclick=${toggleFilter(cookies, dispatch, 'summary_available', 'on')} type="checkbox" name="summary_available" checked=${!!summary_available} />
-                  Summary available
+                  <input onclick=${toggleFilter(cookies, dispatch, 'amendments', 'on')} type="checkbox" name="amendments" checked=${!!amendments} />
+                  Amendments
                 </label><br />
-                <label class="checkbox has-text-grey is-hidden">
+                <label class="checkbox has-text-grey">
                   <input onclick=${toggleFilter(cookies, dispatch, 'resolutions', 'on')} type="checkbox" name="resolutions" checked=${!!resolutions} />
                   Resolutions
-                </label>
-                <label class="${`checkbox has-text-grey control ${user ? '' : 'is-hidden'}`}">
-                  <input onclick=${toggleFilter(cookies, dispatch, 'hide_direct_votes', 'on')} type="checkbox" name="hide_direct_votes" checked=${!!hide_direct_votes}>
-                  Directly Voted
                 </label>
               </div>
 

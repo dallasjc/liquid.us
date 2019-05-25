@@ -232,6 +232,8 @@ const fetchMeasures = (params, cookies, geoip, query, user, location) => (dispat
   const order = '&order=next_agenda_action_at.asc.nullslast,next_agenda_begins_at.asc.nullslast,next_agenda_category.asc.nullslast,last_action_at.desc.nullslast,created_at.desc.nullslast,number.desc'
 
   const policy_area_query = params.policy_area ? `&policy_area=eq.${params.policy_area}` : ''
+  const summary_available = location.query.summary_available || cookies.summary_available ? '&summary=not.is.null' : ''
+
 
 // determine which legislatures to show
   const userCitySt = user && user.address
@@ -245,43 +247,81 @@ const fetchMeasures = (params, cookies, geoip, query, user, location) => (dispat
   const city = location.query.city || cookies.city
   const leg_query = `${congress ? 'U.S. Congress,' : ''}${state ? `${state},` : ''}${city ? `"${city}",` : ''}${congress || state || city ? `` : `U.S. Congress,${userCitySt},${userState},`}`
 
+// determine & filter by type
   const liquid_introduced = cookies.liquid_introduced === 'on' || location.query.liquid_introduced === 'on'
   const imported = cookies.imported === 'on' || location.query.imported === 'on'
+  const resolutions = cookies.resolutions === 'on' || location.query.resolutions === 'on'
+  const amendments = cookies.amendments === 'on' || location.query.amendments === 'on'
+  const nominations = cookies.nominations === 'on' || location.query.nominations === 'on'
+  const bills = cookies.bills === 'on' || location.query.bills === 'on'
 
-    // see which statuses are checked
-      const recently_introduced = cookies.recently_introduced === 'on' || location.query.recently_introduced === 'on'
-      const committee_discharged = cookies.committee_discharged === 'on' || location.query.committee_discharged === 'on'
-      const committee_action = cookies.committee_action === 'on' || location.query.committee_action === 'on'
-      const passed_one = cookies.passed_one === 'on' || location.query.passed_one === 'on'
-      const failed_withdrawn = cookies.failed_one === 'on' || cookies.withdrawn === 'on' || cookies.failed === 'on' || location.query.failed_one === 'on' || location.query.withdrawn === 'on' || location.query.failed === 'on'
-      const passed_both = cookies.passed_both === 'on' || location.query.passed_both === 'on'
-      const resolving = cookies.resolving === 'on' || location.query.resolving === 'on'
-      const to_exec = cookies.to_exec === 'on' || location.query.to_exec === 'on'
-      const enacted_check = cookies.enacted === 'on' || location.query.enacted === 'on'
-      const veto_check = cookies.veto === 'on' || location.query.veto === 'on'
+  const type_query = `${nominations
+    ? 'nomination,'
+    : ''}${amendments
+    ? 'constitutional amendment,'
+    : ''}${bills
+    ? 'bill,'
+    : ''}${resolutions
+    ? 'resolution,joint-resolution,'
+    : ''}${!nominations && !resolutions && !amendments && !bills
+    ? 'bill,nomination,resolution,constitutional amendment,'
+    : ''}`
 
-      const status_query = `${recently_introduced
-          ? `Introduced,Pending Committee,`
-          : ''}${committee_discharged
-          ? 'Awaiting%20floor or committee vote,Pending Executive Calendar,'
-          : ''}${committee_action
-          ? 'Committee Consideration,'
-          : ''}${passed_one
-          ? 'Passed One Chamber,'
-          : ''}${failed_withdrawn
-          ? 'Failed One Chamber,Withdrawn,Failed or Returned to Executive,'
-          : ''}${passed_both
-          ? 'Passed Both Chambers,'
-          : ''}${resolving
-          ? 'Resolving Differences,'
-          : ''}${to_exec
-          ? 'To Executive,'
-          : ''}${enacted_check
-          ? 'Enacted,'
-          : ''}${veto_check
-          ? 'Veto Actions,'
-          : ''}`
-console.log(status_query)
+// see which liquid actions are checked
+
+  const user_introduced = cookies.user_introduced === 'on' || location.query.user_introduced === 'on' ? `&author_username=eq.${user.username}` : ''
+  const directly_voted = cookies.directly_voted === 'on' || location.query.directly_voted === 'on'
+  const proxy_voted = cookies.proxy_voted === 'on' || location.query.proxy_voted === 'on'
+  const not_voted = cookies.not_voted === 'on' || location.query.not_voted === 'on'
+  const liquid_votes = directly_voted && proxy_voted && not_voted
+    ? ``
+    : directly_voted && proxy_voted
+    ? '&delegate_rank=not.is.null'
+    : directly_voted && not_voted
+    ? '&or=(delegate_rank=is.null,delegate_rank=eq.-1)'
+    : proxy_voted && not_voted
+    ? '&or=(delegate_rank=is.null,delegate_rank=neq.-1)'
+    : directly_voted
+    ? '&delegate_rank=eq.-1'
+    : proxy_voted
+    ? '&delegate_rank=neq.-1&delegate_rank=not.is.null'
+    : not_voted
+    ? '&delegate_rank=is.null'
+    : ''
+
+// see which statuses are checked
+  const recently_introduced = cookies.recently_introduced === 'on' || location.query.recently_introduced === 'on'
+  const committee_discharged = cookies.committee_discharged === 'on' || location.query.committee_discharged === 'on'
+  const committee_action = cookies.committee_action === 'on' || location.query.committee_action === 'on'
+  const passed_one = cookies.passed_one === 'on' || location.query.passed_one === 'on'
+  const failed_withdrawn = cookies.failed_one === 'on' || cookies.withdrawn === 'on' || cookies.failed === 'on' || location.query.failed_one === 'on' || location.query.withdrawn === 'on' || location.query.failed === 'on'
+  const passed_both = cookies.passed_both === 'on' || location.query.passed_both === 'on'
+  const resolving = cookies.resolving === 'on' || location.query.resolving === 'on'
+  const to_exec = cookies.to_exec === 'on' || location.query.to_exec === 'on'
+  const enacted_check = cookies.enacted === 'on' || location.query.enacted === 'on'
+  const veto_check = cookies.veto === 'on' || location.query.veto === 'on'
+
+  const status_query = `${recently_introduced
+      ? `Introduced,Pending Committee,`
+      : ''}${committee_discharged
+      ? 'Awaiting%20floor or committee vote,Pending Executive Calendar,'
+      : ''}${committee_action
+      ? 'Committee Consideration,'
+      : ''}${passed_one
+      ? 'Passed One Chamber,'
+      : ''}${failed_withdrawn
+      ? 'Failed One Chamber,Withdrawn,Failed or Returned to Executive,'
+      : ''}${passed_both
+      ? 'Passed Both Chambers,'
+      : ''}${resolving
+      ? 'Resolving Differences,'
+      : ''}${to_exec
+      ? 'To Executive,'
+      : ''}${enacted_check
+      ? 'Enacted,'
+      : ''}${veto_check
+      ? 'Veto Actions,'
+      : ''}`
 
 const liquidImportedStatusCheck = liquid_introduced && status_query
   ? `&or=(status.in.(${removeEndComma(status_query)}),introduced_at.is.null)`
@@ -302,7 +342,7 @@ const liquidImportedStatusCheck = liquid_introduced && status_query
     'summary', 'legislature_name', 'created_at', 'author_first_name', 'author_last_name', 'author_username', 'policy_area', 'chamber'
   ]
   if (user) fields.push('vote_position', 'delegate_rank', 'delegate_name')
-  const url = `/measures_detailed?select=${fields.join(',')}${policy_area_query}${liquidImportedStatusCheck}&legislature_name=in.(${removeEndComma(leg_query)})${order}&limit=40`
+  const url = `/measures_detailed?select=${fields.join(',')}${user_introduced}${policy_area_query}${liquidImportedStatusCheck}&legislature_name=in.(${removeEndComma(leg_query)})&type=in.(${removeEndComma(type_query)})${summary_available}${liquid_votes}${order}&limit=40`
 console.log(url)
   return api(dispatch, url, { user })
     .then((measures) => dispatch({ type: 'measure:receivedList', measures }))

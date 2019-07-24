@@ -46,6 +46,16 @@ module.exports = (event, state) => {
         postQuestion(event, state.user),
         fetchVoteQuestions(event.vote, state.user),
       ])]
+      case 'vote:questionFromSignupForm':
+        return [{
+          ...state,
+          error: null,
+          errors: {},
+          loading: { ...state.loading, questions: true },
+        }, combineEffectsInSeries([
+          preventDefault(event.event),
+          signupAndQuestion(event, state.offices, state.location),
+        ])]
     case 'vote:questionPosted':
       return [{
         ...state,
@@ -279,7 +289,7 @@ module.exports = (event, state) => {
 
 const postQuestion = ({ event, type, vote, ...formData }, user) => (dispatch) => {
   event.preventDefault()
-
+console.log(vote)
   return api(dispatch, `/questions`, {
     method: 'POST',
     body: JSON.stringify(formData),
@@ -553,6 +563,41 @@ const signupAndEndorse = ({ vote, ...form }, offices, location) => (dispatch) =>
     }
   })
 }
+
+const signupAndQuestion = ({ event, vote, ...form }, offices, location) => (dispatch) => {
+  const { address, email, voter_status } = form
+  const error = validateNameAndAddressForm(address, form.name)
+
+  if (error) return dispatch({ type: 'error', error })
+
+  const name_pieces = form.name.split(' ')
+  const first_name = name_pieces[0]
+  const last_name = name_pieces.slice(1).join(' ')
+
+  return signIn({
+    channel: 'question',
+    email,
+    device_desc: location.userAgent || 'Unknown',
+    phone_number: null,
+    redirect_to: location.path,
+  })(dispatch).then((user) => {
+    if (user) {
+      return updateNameAndAddress({
+        addressData: {
+          address,
+          city: window.lastSelectedGooglePlacesAddress.city,
+          state: window.lastSelectedGooglePlacesAddress.state,
+          geocoords: makePoint(window.lastSelectedGooglePlacesAddress.lon, window.lastSelectedGooglePlacesAddress.lat),
+        },
+        nameData: { first_name, last_name, voter_status },
+        user,
+      })(dispatch)
+        .then(() => postQuestion(event, user)(dispatch))
+        .then(() => fetchVoteQuestions(vote, user)(dispatch))
+    }
+  })
+}
+
 
 const endorsementPageTitleAndMeta = (measures, vote, location) => {
   const measure = measures[vote.short_id]

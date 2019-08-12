@@ -1,21 +1,23 @@
 const { handleForm, html } = require('../helpers')
 
 module.exports = (state, dispatch) => {
-  const { forms, loading, location, updates = {} } = state
+  const { forms, loading, location, measures = {}, updates = {} } = state
   const update = updates[location.params.id] || {}
   const { subject, body } = update
   const form = forms.editUpdate || {}
+  const measure = location.params.shortId && measures[location.params.shortId]
 
+console.log(form)
 
   return html`
     <form method="POST" onsubmit=${handleForm(dispatch, { type: 'vote:updateFormSaved' })} onkeyup=${handleForm(dispatch, { type: 'measure:updateFormChanged' })} onchange=${handleForm(dispatch, { type: 'measure:updateFormChanged' })}>
       <section class="section">
         <div class="container is-widescreen">
-          <h2 class="title is-4 has-text-centered">Send update to supporters of Hold Charter Schools Accountable</h2>
+          <h2 class="title is-4 has-text-centered">Send update to supporters of '${measure.title}'</h2>
           <div class="columns">
             <div class="column is-size-5">
               <p><b>To:</b> All supporters</p>
-              <p><b>From:</b> Hold Charter Schools Accountable via Liquid US</p><br />
+              <p><b>From:</b> '${measure.title} via Liquid US</p><br />
               <div class="field">
                 <b>Subject</b>
                 <div class="control" style="padding-top:0.3rem;">

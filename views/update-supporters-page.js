@@ -7,10 +7,10 @@ module.exports = (state, dispatch) => {
   const form = forms.editUpdate || {}
   const measure = location.params.shortId && measures[location.params.shortId]
 
-console.log(form)
+console.log(state)
 
   return html`
-    <form method="POST" onsubmit=${handleForm(dispatch, { type: 'vote:updateFormSaved' })} onkeyup=${handleForm(dispatch, { type: 'measure:updateFormChanged' })} onchange=${handleForm(dispatch, { type: 'measure:updateFormChanged' })}>
+    <form method="POST" onsubmit=${handleForm(dispatch, { type: 'vote:updateFormSaved' })} onkeyup=${handleForm(dispatch, { type: 'vote:updateFormChanged' })} onchange=${handleForm(dispatch, { type: 'vote:updateFormChanged' })}>
       <section class="section">
         <div class="container is-widescreen">
           <h2 class="title is-4 has-text-centered">Send update to supporters of '${measure.title}'</h2>

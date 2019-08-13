@@ -17,6 +17,8 @@ module.exports = (event, state) => {
         case '/legislation/:shortId/votes/:voteId':
         case '/nominations/:shortId/votes/:voteId':
         case '/:username/:shortId/votes/:voteId':
+        case '/:username/:shortId/votes/:voteId/update':
+
           return [{
             ...state,
             loading: { ...state.loading, page: !state.votes[event.voteId] },
@@ -38,6 +40,7 @@ module.exports = (event, state) => {
         default:
           return [state]
       }
+
     case 'vote:questionFormSubmitted':
       return [{
         ...state,

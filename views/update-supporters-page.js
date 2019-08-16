@@ -104,6 +104,28 @@ console.log(state)
                 <p>Dear Dallas,</p>
                 <p><i>Save draft language to populate body</i></p>
               </div>
+              <div class="columns">
+                <div class="column">
+                  <div class="field is-grouped">
+                    <div class="control" style="margin-left:1rem">
+                      <button class="button is-danger" type="submit">
+                        <span class="icon"><i class="fa fa-envelope"></i></span>
+                        <span>Send test email</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="column has-text-right">
+                  <div class="field">
+                    <div class="control">
+                      <button class="button is-primary is-right" type="submit">
+                        <span class="icon"><i class="fa fa-share"></i></span>
+                        <span>Send update now</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

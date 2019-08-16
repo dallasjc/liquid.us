@@ -1,16 +1,22 @@
 const { handleForm, html } = require('../helpers')
 
 module.exports = (state, dispatch) => {
-  const { forms, loading, location, measures = {}, updates = {} } = state
+  const { forms, loading, location, measures = {}, updates = {}, user, votes } = state
   const update = updates[location.params.id] || {}
   const { subject, body } = update
   const form = forms.editUpdate || {}
   const measure = location.params.shortId && measures[location.params.shortId]
+  const vote = location.params.voteId && votes[location.params.shortId]
+  const isPetitionAuthor = user && user.id === vote.user_id
+  const notPetitionAuthorMessage = isPetitionAuthor ? '' : html`<br /><br /><div class="is-size-3 notification is-danger">You are not the author of this petition.</div>`
+
 
 console.log(state)
 
   return html`
-    <form method="POST" onsubmit=${handleForm(dispatch, { type: 'vote:updateFormSaved' })} onkeyup=${handleForm(dispatch, { type: 'vote:updateFormChanged' })} onchange=${handleForm(dispatch, { type: 'vote:updateFormChanged' })}>
+  ${notPetitionAuthorMessage}
+
+    <form method="POST" class=${isPetitionAuthor ? '' : 'is-hidden'} onsubmit=${handleForm(dispatch, { type: 'vote:updateFormSaved' })} onkeyup=${handleForm(dispatch, { type: 'vote:updateFormChanged' })} onchange=${handleForm(dispatch, { type: 'vote:updateFormChanged' })}>
       <section class="section">
         <div class="container is-widescreen">
           <h2 class="title is-4 has-text-centered">Send update to supporters of '${measure.title}'</h2>

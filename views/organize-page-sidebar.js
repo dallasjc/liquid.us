@@ -37,7 +37,7 @@ const getInvolvedForm = (state, dispatch) => {
   return html`
     <form method="POST" style="width: 100%;" method="POST" onsubmit=${handleForm(dispatch, { type: 'contact:organizeSignUpForm' })}>
       <div class="field">
-        <label class="label has-text-grey">Your Name *</label>
+        <label class="label has-text-grey is-size-4">Your Name *</label>
         <div class="control has-icons-left">
           <input name="name" autocomplete="off" class=${`input ${error && error.field === 'name' && 'is-danger'}`} placeholder="John Doe" required />
           ${error && error.field === 'name'
@@ -74,7 +74,7 @@ const getInvolvedForm = (state, dispatch) => {
       </div>
       <div class="field">
         <div class="control">
-          <button class=${`button is-primary is-fullwidth has-text-weight-bold fix-bulma-centered-text is-size-5 ${loading ? 'is-loading' : ''}`} type="submit">Get involved</button>
+          <button class=${`button is-link is-fullwidth has-text-weight-bold fix-bulma-centered-text is-size-5 ${loading ? 'is-loading' : ''}`} type="submit">Endorse Health Equity Zones</button>
         </div>
       </div>
     </form>

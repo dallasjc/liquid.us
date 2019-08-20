@@ -12,10 +12,9 @@ console.log(state)
       <section class="hero is-bold">
         <div class="hero-body">
           <div class="container">
-            <h2 class="title is-2 is-size-2-desktop is-size-3"><strong><center>Join the fight for a healthier democracy</center></strong></h2>
+            <center><h2 class="title is-2 is-size-2-desktop is-size-3"><strong>Partisanship, lies and corruption have overrun our political system</strong></h2></center>
             <div class="is-size-4">
-              <p>Our political system is overrun by partisanship, lies, and corruption. Worse, our elections make it nearly impossible to do anything about it.<br style="line-height:3rem;" /></p>
-              <p><b><center>Liquid democracy offers a path forward.</center></b>
+              <p><b>Liquid democracy offers a path forward.</b>
               Build a network of personal representatives - anyone you want - on an issue-by-issue basis. Represent others by voting on bills directly or allow your reps to vote on your behalf.<br style="line-height:3rem;" />
               Voters can use liquid democracy to have a louder and growing voice in the legislative process.<br style="line-height:3rem;" />
               <b>Have a popular reform that's not getting traction?</b> Use Liquid US to build support district-by-district and pressure your elected officials.<br style="line-height:3rem;" />

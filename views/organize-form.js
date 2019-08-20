@@ -5,7 +5,6 @@ module.exports = (state, dispatch) => {
 
   const name = [user.first_name, user.last_name].filter(a => a).join(' ')
   const address = user.address ? user.address.address : ''
-  const isPublic = true
 
   return html`
     <form method="POST" style="width: 100%;" method="POST" onsubmit=${handleForm(dispatch, { type: 'vote:endorsed', vote })}>
@@ -32,25 +31,6 @@ module.exports = (state, dispatch) => {
           <span class="icon is-small is-right"><i class="${`fa fa-${address ? 'lock' : 'map-marker-alt'}`}"></i></span>
         </div>
         <p class="is-size-7" style="margin-top: .3rem;">So your reps know you're their constituent.</p>
-      </div>
-      <div class="field">
-        <div class="control">
-          <label class="checkbox">
-            <input
-              name="is_public"
-              type="checkbox"
-              checked="${isPublic}"
-              onchange="${(event) => dispatch({ type: 'vote:endorsementToggledPrivacyCheckbox', vote, event })}"
-            />
-            <span>Share my name publicly</span>
-          </label>
-          ${!isPublic ? html`
-            <p class="is-size-7 has-text-grey">
-              We will still share your name with your rep so they know you're
-              their real constituent.
-            </p>
-          ` : html``}
-        </div>
       </div>
       <div class="field">
         <div class="control">

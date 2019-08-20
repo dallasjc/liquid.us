@@ -4,14 +4,13 @@ const video = require('./video')
 const sidebar = require('./organize-page-sidebar')
 
 module.exports = (state, dispatch) => {
-  const { cookies, location, user } = state
-  const hide_direct_votes = location.query.hide_direct_votes || cookies.hide_direct_votes
-
+  const { cookies, showMobileOrganizeForm, user } = state
+console.log(state)
   return html`
   <div class="columns">
-    <div class="column is-three-quarters">
+    <div class="column">
       <section class="hero is-bold">
-        <div class="hero-body-small">
+        <div class="hero-body">
           <div class="container">
             <h2 class="title is-2 is-size-2-desktop is-size-3"><strong><center>Join the fight for a healthier democracy</center></strong></h2>
             <div class="is-size-4">
@@ -26,8 +25,8 @@ module.exports = (state, dispatch) => {
           </div>
         </div>
       </section>
-      <section class="hero is-light is-bold is-fullheight">
-        <div class="hero-body-small">
+      <section class="hero is-light is-bold">
+        <div class="hero-body">
           <div class="container">
             <br />
             <h2 class="title is-2 is-size-2-desktop is-size-3-mobile reveal"><strong>Liquid Democracy enables choice & accountability</strong></h2>
@@ -85,8 +84,8 @@ module.exports = (state, dispatch) => {
           </div>
         </div>
       </section>
-      <section class="hero is-light is-bold is-fullheight">
-        <div class="hero-body-small">
+      <section class="hero is-light is-bold">
+        <div class="hero-body">
           <div class="container">
             <h2 class="title is-3 is-size-2-desktop is-size-3-mobile has-text-centered reveal">Upgrade your democracy</h2>
             <div class="columns has-text-centered">
@@ -106,8 +105,8 @@ module.exports = (state, dispatch) => {
           </div>
         </div>
       </section>
-      <section class="hero is-link is-bold is-fullheight">
-        <div class="hero-body-small">
+      <section class="hero is-link is-bold">
+        <div class="hero-body">
           <div class="container">
             <br /><h2 class="title is-2 is-size-2-desktop is-size-3-mobile reveal">Why we're doing this</h2>
             <h4 class="subtitle is-4 is-size-3-desktop reveal">We believe in the transformative promise of Liquid Democracy.
@@ -117,23 +116,52 @@ module.exports = (state, dispatch) => {
         </div>
       </section>
     </div>
-    <div class="column">
-      ${sidebar(state, dispatch)}
+    <div class="column hero-body is-one-quarter sticky-panel">
+      <div class="panel-wrapper">
+        ${sidebar({ ...state }, dispatch)}
+      </div>
+      <style>
+        .small-screens-only {
+          display: block;
+        }
+        @media (max-width: 1050px) {
+          .sticky-panel.column {
+            display: none;
+          }
+        }
+        @media (min-width: 1050px) {
+          .sticky-panel.column {
+            display: block;
+          }
+          .sticky-panel .content {
+            max-width: 253px;
+          }
+          .panel-wrapper {
+            position: fixed;
+            margin-left: 2rem;
+            margin-right: 15px;
+            z-index: 15;
+          }
+        .small-screens-only {
+          display: none;
+        }
+      }
+        @media (max-height: 575px) {
+          /* Don't position:fixed the sidebar if window isn't tall enough */
+          .panel-wrapper {
+            position: relative;
+            margin-right: 0;
+            z-index: 1;
+          }
+        }
+      </style>
     </div>
   </div>
-  <div class="is-hidden-desktop is-hidden-tablet">
-    ${hide_direct_votes ? '' : mobileHoverBar({ cookies, user }, dispatch)}
-  </div>
-  <div class="columns">>
-    <div class="column"></div>
-      <div class="column is-5">
-        <br /><br />
-        ${policyIdeaCTA(state, dispatch)}
-      </div>
-    <div class="column"></div>
+  <div class="small-screens-only">
+    ${showMobileOrganizeForm === true ? '' : mobileHoverBar({ cookies, user }, dispatch)}
   </div>
   <section class="hero is-medium">
-    <div class="hero-body-small">
+    <div class="hero-body">
       <div class="container">
         <section class="section">
           <h2 class="title is-2 reveal">Learn More</h2>
@@ -175,7 +203,7 @@ module.exports = (state, dispatch) => {
   `
 }
 
-const mobileHoverBar = ({ cookies, user }, dispatch) => {
+const mobileHoverBar = ({ user }, dispatch) => {
   let action = 'Get involved'; let color = 'is-success'
   if (user) { action = 'Share'; color = 'is-link' }
 
@@ -191,23 +219,9 @@ const mobileHoverBar = ({ cookies, user }, dispatch) => {
     ">
       <div class="field">
         <div class="control">
-          <button class=${`button ${color} is-fullwidth fix-bulma-centered-text has-text-weight-bold is-size-5`} onclick=${toggleGetInvolvedform(cookies, dispatch)}>${action}</button>
+          <button class=${`button ${color} is-fullwidth fix-bulma-centered-text has-text-weight-bold is-size-5`} onclick=${(event) => dispatch({ type: 'contact:toggledMobileOrganizeForm', event })}>${action}</button>
         </div>
       </div>
     </div>
   `
-}
-
-const toggleGetInvolvedform = (cookies, dispatch) => (event) => {
-  const btn = document.querySelector('.get-involved')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      dispatch({ type: 'cookieSet', key: 'get_involved', value: 'on' })
-    } else {
-      dispatch({ type: 'cookieUnset', key: 'get_involved' })
-    }
-    btn.click()
-  }
 }

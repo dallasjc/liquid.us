@@ -75,19 +75,6 @@ const getInvolvedForm = (state, dispatch) => {
       </div>
       <div class="field">
         <div class="control">
-          <label class="checkbox">
-            <input
-              name="is_public"
-              type="checkbox"
-              checked="${isPublic}"
-              onchange="${(event) => dispatch({ type: 'contact:signupToggledPrivacyCheckbox', event })}"
-            />
-            <span>Share my name publicly</span>
-          </label>
-        </div>
-      </div>
-      <div class="field">
-        <div class="control">
           <button onclick=${toggleGetInvolvedform(cookies, dispatch)} class=${`button is-primary is-fullwidth has-text-weight-bold fix-bulma-centered-text is-size-5`} type="submit">Get involved</button>
         </div>
       </div>

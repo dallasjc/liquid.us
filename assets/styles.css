@@ -6734,6 +6734,11 @@ label.panel-block {
   flex-shrink: 0;
   padding: 3rem 1.5rem; }
 
+  .hero-body-small {
+    flex-grow: 1;
+    flex-shrink: 0;
+    padding: 1.5rem 1.5rem; }
+
 .section {
   padding: 3rem 1.5rem; }
   @media screen and (min-width: 1088px) {

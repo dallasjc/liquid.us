@@ -2,13 +2,12 @@ const { handleForm, html } = require('../helpers')
 const organizeForm = require('./organize-form')
 
 module.exports = (state, dispatch) => {
-  const { cookies, location, user } = state
-  const hide_direct_votes = location.query.hide_direct_votes || cookies.hide_direct_votes
+  const { showMobileOrganizeForm, user } = state
 
   return html`
-    <div style="z-index: 30;" class=${`${hide_direct_votes ? 'modal is-active' : 'not-modal'} mobile-only`}>
-      <div class="${hide_direct_votes ? 'modal-background' : ''}" onclick=${toggleGetInvolvedform(cookies, dispatch)}></div>
-      <div class="${hide_direct_votes ? 'modal-content' : ''}">
+    <div style="z-index: 30;" class=${`${showMobileOrganizeForm === true ? 'modal is-active' : 'not-modal'} mobile-only`}>
+      <div class="${showMobileOrganizeForm === true ? 'modal-background' : ''}" onclick=${(event) => dispatch({ type: 'contact:toggledMobileOrganizeForm', event })}></div>
+      <div class="${showMobileOrganizeForm === true ? 'modal-content' : ''}">
         <nav class="box">
           ${!user // logged out
             ? getInvolvedForm(state, dispatch)
@@ -16,7 +15,7 @@ module.exports = (state, dispatch) => {
            }
         </nav>
       </div>
-      <button class="${`modal-close is-large ${hide_direct_votes ? '' : 'is-hidden'}`}" aria-label="close" onclick=${toggleGetInvolvedform(cookies, dispatch)}></button>
+      <button class="${`modal-close is-large ${showMobileOrganizeForm === true ? '' : 'is-hidden'}`}" aria-label="close" onclick=${(event) => dispatch({ type: 'contact:toggledMobileOrganizeForm', event })}></button>
       <style>
         .modal-content, .modal-card {
           max-height: calc(100vh - 100px) !important;
@@ -32,8 +31,8 @@ module.exports = (state, dispatch) => {
 }
 
 const getInvolvedForm = (state, dispatch) => {
-  const { cookies, error } = state
-  const isPublic = true
+  const { error } = state
+  const loading = state.loading.signupFromOrganizeForm
 
   return html`
     <form method="POST" style="width: 100%;" method="POST" onsubmit=${handleForm(dispatch, { type: 'contact:organizeSignUpForm' })}>
@@ -75,25 +74,11 @@ const getInvolvedForm = (state, dispatch) => {
       </div>
       <div class="field">
         <div class="control">
-          <button onclick=${toggleGetInvolvedform(cookies, dispatch)} class=${`button is-primary is-fullwidth has-text-weight-bold fix-bulma-centered-text is-size-5`} type="submit">Get involved</button>
+          <button class=${`button is-primary is-fullwidth has-text-weight-bold fix-bulma-centered-text is-size-5 ${loading ? 'is-loading' : ''}`} type="submit">Get involved</button>
         </div>
       </div>
     </form>
   `
-}
-
-const toggleGetInvolvedform = (cookies, dispatch) => (event) => {
-  const btn = document.querySelector('.get-involved')
-  if (btn.disabled) {
-    event.preventDefault()
-  } else {
-    if (event.currentTarget && event.currentTarget.checked) {
-      dispatch({ type: 'cookieSet', key: 'get_involved', value: 'on' })
-    } else {
-      dispatch({ type: 'cookieUnset', key: 'get_involved' })
-    }
-    btn.click()
-  }
 }
 
 const initGoogleMaps = (event) => window.initGoogleAddressAutocomplete(event.currentTarget.getAttribute('id'))

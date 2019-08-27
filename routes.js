@@ -3,6 +3,7 @@ module.exports = {
   '/': () => import('./views/home-page'),
   '/join': () => import('./views/join-page'),
   '/candidate': () => import('./views/candidate'),
+  '/elected': () => import('./views/elected'),
   '/get_involved': () => import('./views/get-involved'),
   '/sign_in': () => import('./views/sign-in-page'),
   '/sign_in/verify': () => import('./views/verify-otp-page'),

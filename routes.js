@@ -5,6 +5,7 @@ module.exports = {
   '/candidate': () => import('./views/candidate'),
   '/elected': () => import('./views/elected'),
   '/get_involved': () => import('./views/get-involved'),
+  '/organize': () => import('./views/organize'),
   '/sign_in': () => import('./views/sign-in-page'),
   '/sign_in/verify': () => import('./views/verify-otp-page'),
   '/sign_out': () => import('./views/sign-out-page'),

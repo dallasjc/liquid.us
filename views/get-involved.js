@@ -22,7 +22,7 @@ module.exports = (state, dispatch) => {
             <div class="column is-1"></div>
             <div class="column is is-paddingless">
               <h3 class="subtitle is-3 is-size-4-mobile delayed1">
-              Are you tired of unaccountable politicians with more loyalty to party and donors than voters?
+              Are you tired of unaccountable politicians with more loyalty to party, donors, and DC insiders than voters?
               <br /><br />
               Of beauty pageants masquerading as elections that give voters no real choice or control?
               <br /><br />

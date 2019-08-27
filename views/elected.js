@@ -79,7 +79,7 @@ module.exports = (state, dispatch) => {
               <br /><br />
             </div>
             <div class="column">
-              <h2 class="title is-4 has-text-centered">Engage voters</h2>
+              <h2 class="title is-4 has-text-centered">Poll verified voters</h2>
               <img src="/assets/community.png" width="40%">
               <br /><br />
             </div>
@@ -93,7 +93,7 @@ module.exports = (state, dispatch) => {
           <br /><br />
           We know from experience that it doesn't need to be this way.
           <br /><br />
-          With Liquid US, you can stay focused on the critical issues without distracting from your reelection. Connect to your constituents around the policy changes they would like to see, learn from community-supported experts, and make a difference for your community by pressuring other legislators to support your priorities.
+          With Liquid US, you can stay focused on the critical issues without distracting from your reelection. Connect to your constituents around the policy changes they would like to see, learn from community-supported experts, and pressure other legislators to support your community's priorities.
           <br /><br />
           <br />
         </div>

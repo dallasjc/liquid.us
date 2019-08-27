@@ -61,6 +61,7 @@ module.exports = {
 
     switch (eventPrefix) {
       case 'contactForm':
+      case 'organize':
         return require('./models/contact')(event, state)
       case 'error':
         switch (event.type) {

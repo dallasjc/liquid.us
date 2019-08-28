@@ -90,14 +90,14 @@ module.exports = (state, dispatch) => {
           <div class="columns is-vcentered">
             <div class="column is-1"></div>
             <div class="column has-text-left-tablet is-hidden-desktop is-hidden-tablet">
-              <h4 class="subtitle is-4 is-size-4-desktop reveal"><strong>Debate  policy proposals</strong> not politicians. Liquid shifts the focus from winning the next election to demonstrating that your bill has popular support.</h4>
+              <h4 class="subtitle is-4 is-size-4-desktop reveal"><strong>Debate and vote on policy proposals</strong> not politicians. Liquid shifts the focus from winning the next election to demonstrating that your bill has popular support.</h4>
             </div>
             <div class="column has-text-centered">
               <img src="/assets/debate.png" width="60%">
             </div>
             <div class="column is-1"></div>
             <div class="column has-text-left-tablet is-hidden-mobile">
-              <h4 class="subtitle is-4 is-size-4-desktop reveal"><strong>Debate  policy proposals</strong> not politicians. Liquid shifts the focus from who wins elections to demonstrating that your bill has popular support.</h4>
+              <h4 class="subtitle is-4 is-size-4-desktop reveal"><strong>Debate and vote on policy proposals</strong> not politicians. Liquid shifts the focus from who wins elections to demonstrating that your bill has popular support.</h4>
             </div>
             <div class="column is-1"></div>
           </div>
@@ -107,7 +107,7 @@ module.exports = (state, dispatch) => {
           <div class="columns is-vcentered">
             <div class="column is-2"></div>
             <div class="column has-text-left-tablet">
-              <h3 class="subtitle is-4 is-size-4-desktop reveal"><strong>Choose people you trust</strong> to vote on bills for you when you do not. They can delegate to others, creating a trust network that can measure the public's support and opposition on every policy proposal.</h3>
+              <h3 class="subtitle is-4 is-size-4-desktop reveal"><strong>Choose people you trust</strong> to vote on bills for you when you do not. They can delegate to others, creating a trust network to measure the public's support and opposition on every policy proposal.</h3>
             </div>
             <div class="column is-1"></div>
             <div class="column has-text-centered">

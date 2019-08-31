@@ -16,7 +16,7 @@ module.exports = (event, state) => {
       return [{
         ...state,
         contactForm: { ...state.contactForm, submitted: true },
-      }, sendMessage({ ...event, user: state.user })]
+      }, sendMessage({ url: state.location.url, ...event, user: state.user })]
     default:
       return [state]
   }

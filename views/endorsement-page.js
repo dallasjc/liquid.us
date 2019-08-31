@@ -5,10 +5,11 @@ const measureSummary = require('./measure-summary')
 const sidebar = require('./endorsement-page-sidebar')
 const stateAbbreviations = require('datasets-us-states-names-abbr')
 const daneTargetReps = require('./dane-county-targetReps')
+const backersTable = require('./endorsement-backers')
 const petitionQuestions = require('./endorsement-questions')
 
 module.exports = (state, dispatch) => {
-  const { location, measures, votes } = state
+  const { loading, location, measures, votes } = state
   const measure = measures[location.params.shortId]
   const vote = votes[location.params.voteId]
   const l = measure
@@ -19,11 +20,14 @@ module.exports = (state, dispatch) => {
   const isDane = (l) => (
     l.short_id === 'press-pause-on-227m-new-jail'
   )
-  const tab = location.query.tab || 'arguments'
+  const tab = location.query.tab || 'comments'
   const path = location.path
 
+  const numComments = (vote && vote.replies && !loading.comments && vote.replies.length) || '...'
+  const numBackers = (vote && vote.backers && !loading.backers && vote.backers.length) || '...'
+
   return html`
-    <section class="section">
+    <section class="section" onconnected=${() => { dispatch({ type: 'vote:fetchRepliesAndBackers', vote }) }}>
       <div class="container is-widescreen">
         <div class="columns">
           <div class="column">
@@ -39,21 +43,22 @@ module.exports = (state, dispatch) => {
             ${endorsementComment(measure, vote)}
             <br />
             <h3 class="title is-5" style="font-weight: 500;">Policy Details</h3>
-            <div style="border: 1px solid hsl(0, 0%, 85%); padding: 1.2rem; height: 400px; overflow-y: scroll; box-shadow: inset hsl(0, 0%, 92%) 3px 3px 3px 0px; margin-bottom: 2rem;">
+            <div style="border: 1px solid hsl(0, 0%, 85%); padding: 1.2rem; height: 400px; overflow-y: scroll; box-shadow: inset hsl(0, 0%, 87%) 2px 2px 0px 0px; margin-bottom: 2rem;">
               ${measureSummary({ ...measure, alwaysExpanded: true, size: 5 }, dispatch)}
             </div>
             <div class="small-screens-only">
               ${vote.showMobileEndorsementForm ? '' : mobileHoverBar({ vote }, dispatch)}
             </div>
-            <div>
-              <div class="tabs">
-                <ul>
-                  <li class=${tab === 'replies' ? 'is-active' : ''}><a href=${`${path}?tab=replies`}>Comments</a></li>
-                  <li class=${tab === 'questions' ? 'is-active' : ''}><a href=${`${path}?tab=questions`}>Questions</a></li>
-                </ul>
-              </div>
-              ${tab === 'questions' ? petitionQuestions(state, dispatch) : commentsView(vote, state, dispatch)}
+            <div class="tabs">
+              <ul>
+                <li class=${tab === 'comments' ? 'is-active' : ''}><a href=${`${location.path}?tab=comments`}>Comments (${numComments})</a></li>
+                <li class=${tab === 'questions' ? 'is-active' : ''}><a href=${`${path}?tab=questions`}>Questions</a></li>
+                <li class=${tab === 'backers' ? 'is-active' : ''}><a href=${`${location.path}?tab=backers`}>Backers (${numBackers})</a></li>
+              </ul>
             </div>
+            ${tab === 'questions' ? petitionQuestions(state, dispatch)
+              : tab === 'backers' ? backersTable(state, dispatch)
+              : commentsView(vote, state, dispatch)}
           </div>
           <div class="column is-one-quarter sticky-panel">
             <div class="panel-wrapper">
@@ -62,6 +67,9 @@ module.exports = (state, dispatch) => {
             <style>
               .small-screens-only {
                 display: block;
+              }
+              .sticky-panel.column {
+                display: none;
               }
               @media (min-width: 1050px) {
                 .sticky-panel.column {

@@ -1,13 +1,11 @@
 const { handleForm, html } = require('../helpers')
 
 module.exports = (state, dispatch) => {
-  const { forms, loading, location, measures = {}, updates = {}, user, votes } = state
+  const { forms, loading, location, measures = {}, updates = {}, user } = state
   const update = updates[location.params.id] || {}
   const { subject, body } = update
-  const form = forms.editUpdate || {}
   const measure = location.params.shortId && measures[location.params.shortId]
-  const vote = location.params.voteId && votes[location.params.shortId]
-  const isPetitionAuthor = user && user.id === vote.user_id
+  const isPetitionAuthor = user && user.id === measure.author_id
   const notPetitionAuthorMessage = isPetitionAuthor ? '' : html`<br /><br /><div class="is-size-3 notification is-danger">You are not the author of this petition.</div>`
 
 
@@ -35,13 +33,10 @@ console.log(state)
                   <div class="label">Body text</div>
                 </div>
                 <div class="column is-narrow-is-right">
-                  <p>Insert variable</p>
-                </div>
-                <div class="column is-narrow-is-right">
                   <div class="dropdown is-active">
                     <div class="dropdown-trigger">
                       <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                        <span>Select</span>
+                        <span>Select variable to insert</span>
                         <span class="icon is-small">
                           <i class="fas fa-angle-down" aria-hidden="true"></i>
                         </span>
@@ -49,36 +44,16 @@ console.log(state)
                     </div>
                     <div class="dropdown-menu" id="dropdown-menu" role="menu">
                       <div class="dropdown-content">
-                        <a href="#" class="dropdown-item">
-                        Recipient First Name
-                        </a>
-                        <a href="#" class="dropdown-item">
-                        Rep First Name
-                        </a>
-                        <a href="#" class="dropdown-item is-active">
-                          Rep Last Name
-                        </a>
-                        <a href="#" class="dropdown-item">
-                          Rep Email
-                        </a>
-                        <a href="#" class="dropdown-item">
-                          Rep Phone Number
-                        </a>
-                        <a href="#" class="dropdown-item">
-                          Rep District
-                        </a>
-                        <a href="#" class="dropdown-item">
-                          Senator First Name
-                        </a>
-                        <a href="#" class="dropdown-item">
-                          Senator Last Name
-                        </a>
-                        <a href="#" class="dropdown-item">
-                          Senate District
-                        </a>
-                        <a href="#" class="dropdown-item">
-                          Senator Phone
-                        </a>
+                        <div class="dropdown-item">Recipient First Name</div>
+                        <div class="dropdown-item">Rep First Name</div>
+                        <div class="dropdown-item is-active">Rep Last Name</div>
+                        <div class="dropdown-item">Rep Email</div>
+                        <div class="dropdown-item">Rep Phone Number</div>
+                        <div class="dropdown-item">Rep District</div>
+                        <div class="dropdown-item">Senator First Name</div>
+                        <div class="dropdown-item">Senator Last Name</div>
+                        <div class="dropdown-item">Senate District</div>
+                        <div class="dropdown-item">Senator Phone</div>
                       </div>
                     </div>
                   </div>

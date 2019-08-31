@@ -165,7 +165,6 @@ module.exports = {
             case '/legislation/:shortId/votes/:voteId':
             case '/nominations/:shortId/votes/:voteId':
             case '/:username/:shortId/votes/:voteId':
-            case '/:username/:shortId/votes/:voteId/update':
               return require('./models/vote')(event, state)
             case '/proxies':
               return require('./models/proxy')(event, state)

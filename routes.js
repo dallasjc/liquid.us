@@ -31,7 +31,7 @@ module.exports = {
   '/:username/:shortId': () => import('./views/measure-details-page'),
   '/:username/:shortId/import': () => import('./views/import-vote-page'),
   '/:username/:shortId/edit': () => import('./views/edit-legislation-page'),
+  '/:username/:shortId/update': () => import('./views/update-supporters-page'),
   '/:username/:shortId/votes/:voteId': () => import('./views/measure-details-page'),
-  '/:username/:shortId/votes/:voteId/update': () => import('./views/update-supporters-page'),
 
 }

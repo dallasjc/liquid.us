@@ -30,7 +30,7 @@ module.exports = (state, dispatch) => {
                   <div class="label">Body text</div>
                 </div>
                 <div class="column is-narrow-is-right">
-                  <div class="dropdown is-active">
+                  <div class="dropdown is-hoverable">
                     <div class="dropdown-trigger">
                       <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
                         <span>Select variable to insert</span>
@@ -43,7 +43,7 @@ module.exports = (state, dispatch) => {
                       <div class="dropdown-content">
                         <div class="dropdown-item">Recipient First Name</div>
                         <div class="dropdown-item">Rep First Name</div>
-                        <div class="dropdown-item is-active">Rep Last Name</div>
+                        <div class="dropdown-item">Rep Last Name</div>
                         <div class="dropdown-item">Rep Email</div>
                         <div class="dropdown-item">Rep Phone Number</div>
                         <div class="dropdown-item">Rep District</div>

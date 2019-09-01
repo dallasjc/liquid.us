@@ -157,6 +157,7 @@ module.exports = {
             case '/nominations/:shortId':
             case '/:username/:shortId':
             case '/:username/:shortId/edit':
+            case '/:username/:shortId/update':
               return require('./models/measure')(event, state)
             case '/legislation/:shortId/import':
             case '/nominations/:shortId/import':

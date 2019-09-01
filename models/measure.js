@@ -69,6 +69,20 @@ module.exports = (event, state) => {
             changePageTitle('Edit Measure'),
             importEffect('fetchMeasure', state.location.params.shortId, state)
           ])]
+        case '/:username/:shortId/update':
+        if (!state.user) return [state, redirect('/sign_in')]
+        return [{
+          ...state,
+          location: {
+            ...state.location,
+            title: 'Send update',
+          },
+          loading: { ...state.loading, page: true },
+          forms: { ...state.forms, editBodyText: null },
+        }, combineEffects([
+          changePageTitle('Send update'),
+          importEffect('fetchMeasure', state.location.params.shortId, state)
+        ])]
         case '/petitions/yours':
           if (!state.user) return [state, redirect('/sign_in')]
           return [{

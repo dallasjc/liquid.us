@@ -173,11 +173,11 @@ module.exports = (state, dispatch) => {
             </div>
           </div>
 
-          <p class="subtitle is-4 is-size-4-desktop reveal">Use Liquid US to learn about, vote on, and share Congressional, state, and local bills, and choose delegates to speak when you don't. We notify your legislators, publicly track voting results and comments by district, and grade your elected officials for how well they represent you.
+          <p class="subtitle is-4 is-size-4-desktop reveal">Learn about, share, and vote on any policy proposal, anywhere, and choose delegates to speak when you don't. We publicly track voter support for each proposal by district and city and update your legislators when you speak out.
           <br /><br />
-          Have a popular policy that's going nowhere? Apply pressure to key legislators by demonstrating that voters in their district support your policy.
+          Have a popular policy that's going nowhere? Apply pressure to key legislators by demonstrating that voters in their district support your position.
           <br /><br />
-          Is your legislator failing to represent their district? Upgrade your democracy by supporting or running as a liquid candidate. These candidates promise that, if elected, they will use a constituent-driven liquid platform to determine how to vote on every bill.</p>
+          Is your legislator failing to represent their district? Upgrade your democracy by supporting or running as a liquid candidate. These candidates pledge to use a constituent-driven liquid platform to determine how to vote on every bill.</p>
           <br />
           <br />
         </div>

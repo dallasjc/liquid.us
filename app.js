@@ -11,10 +11,10 @@ const { fetchMetrics } = require('./effects/metrics')
 const { fetchUser } = require('./effects/user')
 const { fetchOfficesFromIP } = require('./effects/office')
 const { changePageTitle, randomQuote, startNProgress, stopNProgress, scrollToTop } = require('./effects/page')
-const trackPageView = require('./effects/pageview')
 
 module.exports = {
   init: [{
+    actions: [],
     cookies: {}, // initialized in browser/server.js
     contactForm: { open: false, submitted: false },
     error: null,
@@ -60,6 +60,8 @@ module.exports = {
     const eventPrefix = event.type.split(':')[0]
 
     switch (eventPrefix) {
+      case 'activity':
+        return require('./models/activity')(event, state)
       case 'contactForm':
       case 'organize':
         return require('./models/contact')(event, state)
@@ -82,6 +84,8 @@ module.exports = {
         return require('./models/import')(event, state)
       case 'measure':
         return require('./models/measure')(event, state)
+      case 'petition':
+        return require('./models/petition')(event, state)
       case 'metricsReceived':
         return [{ ...state, usersCount: event.usersCount }]
       case 'navHamburgerToggled':
@@ -117,7 +121,7 @@ module.exports = {
             firstPageLoad: false,
             loading: { page: false },
             view: event.view,
-          }, trackPageView(state)]
+          }]
         }
         // route JS code has been loaded (route JS is asynchronously loaded in chunks using webpack)
         const [pageState, pageEffect] = ((state) => {
@@ -132,7 +136,6 @@ module.exports = {
             case '/sign_in':
             case '/sign_in/verify':
             case '/join':
-            case '/candidate':
             case '/sign_out':
               return require('./models/session')(event, state)
             case '/get_started':
@@ -144,8 +147,11 @@ module.exports = {
             case '/:username':
             case '/twitter/:username':
               return require('./models/profile')(event, state)
-            case '/legislation':
-            case '/legislation/propose':
+            case '/activity':
+              return require('./models/activity')(event, state)
+            case '/legislation/create':
+            case '/petitions/create':
+            case '/petitions/yours':
             case '/legislation/yours':
             case '/legislation/:shortId':
             case '/nominations/:shortId':
@@ -167,6 +173,12 @@ module.exports = {
               return require('./models/user')(event, state)
             case '/metrics':
               return require('./models/metric')(event, state)
+            case '/candidate':
+              return [{ ...state,
+                location: { ...state.location,
+                  title: 'Run on ideas. Be a leader. Get elected.',
+                },
+              }]
             default:
               return [state]
           }
@@ -176,7 +188,7 @@ module.exports = {
           loading: { page: false },
           view: event.view,
         })
-        return [pageState, combineEffects([changePageTitle(pageState.location.title), pageEffect, trackPageView(pageState)])]
+        return [pageState, combineEffects([changePageTitle(pageState.location.title), pageEffect])]
       case 'onboard':
         return require('./models/onboard')(event, state)
       case 'profile':

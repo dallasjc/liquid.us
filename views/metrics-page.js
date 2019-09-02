@@ -24,7 +24,7 @@ module.exports = ({ loading, metrics }, dispatch) => {
 }
 
 const graphs = (metricsLoading = {}, metrics = {}) => {
-  const loading = ['users', 'active_users', 'votes', 'proposals', 'pageviews', 'conversion'].reduce((b, a) => {
+  const loading = ['users', 'active_users', 'votes', 'proposals', 'measure_users'].reduce((b, a) => {
     b[a] = metricsLoading[a] || !metrics[a]
     return b
   }, {})
@@ -47,14 +47,35 @@ const graphs = (metricsLoading = {}, metrics = {}) => {
         ${loading.proposals ? activityIndicator() : graph(metrics.proposals, ['proposals'])}
       </section>
       <section class="column is-half" style="padding-bottom: 3em;">
-        <h2 class="has-text-centered title is-size-6">Unique page views</h2>
-        ${loading.pageviews ? activityIndicator() : graph(metrics.pageviews, ['pageviews'])}
-      </section>
-      <section class="column is-half" style="padding-bottom: 3em;">
-        <h2 class="has-text-centered title is-size-6">Conversion</h2>
-        ${loading.conversion ? activityIndicator() : graph(metrics.conversion, ['conversion'])}
+        <h2 class="has-text-centered title is-size-6">Top Measures</h2>
+        ${loading.measure_users ? activityIndicator() : topMeasuresTable(metrics.measure_users)}
       </section>
     </div>
+  `
+}
+
+const topMeasuresTable = (topMeasures) => {
+  return html`
+    <table class="table is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>Measure</th>
+          <th>Users</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${topMeasures.map(({ author_username, short_id, users }) => {
+          return html`
+            <tr>
+              <td>
+                <a href="${`/${author_username || 'legislation'}/${short_id}`}">${short_id}</a>
+              </td>
+              <td>${users}</td>
+            </tr>
+          `
+        })}
+      </tbody>
+    </table>
   `
 }
 

@@ -4,7 +4,7 @@ module.exports = ({ error, loading }, dispatch) => {
 
   return html`
     <div class="has-text-centered">
-      <form class="box has-text-centered" method="POST" onsubmit="${handleForm(dispatch, { type: 'contactForm:submitSignup', url: 'https://liquid.us/organize' })}">
+      <form class="box has-text-centered" method="POST" onsubmit="${handleForm(dispatch, { type: 'contactForm:messageSent', url: 'https://liquid.us/organize' })}">
         <div class="field has-text-left">
           <strong><label for="idea">What policy idea deserves to go viral?</label><strong>
         </div>

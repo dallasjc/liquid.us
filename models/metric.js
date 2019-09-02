@@ -12,8 +12,7 @@ module.exports = (event, state) => {
             active_users: true,
             votes: true,
             proposals: true,
-            pageviews: true,
-            conversion: true,
+            measure_users: true,
           },
         },
       }, combineEffects([
@@ -21,8 +20,7 @@ module.exports = (event, state) => {
         fetchMetrics('active_users'),
         fetchMetrics('votes'),
         fetchMetrics('proposals'),
-        fetchMetrics('pageviews'),
-        fetchMetrics('conversion'),
+        fetchTopMeasures,
       ])]
     case 'metric:received':
       return [{
@@ -68,6 +66,16 @@ const fetchMetrics = (name) => (dispatch) => {
       type: 'metric:received',
       name,
       metrics: metrics.reverse(),
+    })
+  })
+}
+
+const fetchTopMeasures = (dispatch) => {
+  return api(dispatch, `/metric_measure_users`).then((metrics) => {
+    dispatch({
+      type: 'metric:received',
+      name: 'measure_users',
+      metrics,
     })
   })
 }

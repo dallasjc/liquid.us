@@ -11,6 +11,7 @@ module.exports = {
   '/settings': () => import('./views/settings-page'),
   '/settings/unsubscribe': () => import('./views/settings-unsubscribe-page'),
   '/legislation/create': () => import('./views/edit-legislation-page'),
+  '/legislation/add': () => import('./views/add-legislation-page'),
   '/legislation/yours': () => import('./views/user-legislation-page'),
   '/petitions/create': () => import('./views/edit-petition-page'),
   '/legislation/:shortId': () => import('./views/measure-details-page'),

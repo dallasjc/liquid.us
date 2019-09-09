@@ -79,7 +79,7 @@ module.exports = (state, dispatch) => {
               <br /><br />
             </div>
             <div class="column">
-              <h2 class="title is-4 has-text-centered">Poll verified voters</h2>
+              <br /><h2 class="title is-4 has-text-centered">Poll verified voters</h2>
               <img src="/assets/community.png" width="40%">
               <br /><br />
             </div>

@@ -162,8 +162,8 @@ module.exports = (state, dispatch) => {
               <br /><br />
             </div>
             <div class="column">
-              <h2 class="title is-4 has-text-centered">Build support for popular legislation</h2>
-              <img src="/assets/community.png" width="40%">
+              <h2 class="title is-4 has-text-centered">Target key legislators</h2>
+              <div class="is-vcentered"><img src="/assets/legislators.png" width="40%"></div>
               <br /><br />
             </div>
             <div class="column">
